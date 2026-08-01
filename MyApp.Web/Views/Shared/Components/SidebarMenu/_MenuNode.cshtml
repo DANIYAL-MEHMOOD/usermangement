@@ -1,0 +1,40 @@
+@model MyApp.Web.DTOs.MenuNodeDto
+
+@{
+    var hasChildren = Model.Children is { Count: > 0 };
+    var collapseId = $"menu-collapse-{Model.MenuId}";
+    var iconClass = string.IsNullOrWhiteSpace(Model.Icon) ? "bi-circle" : Model.Icon;
+    var targetUrl = !string.IsNullOrWhiteSpace(Model.Route) ? $"~/{Model.Route.TrimStart('/')}" :
+                    (!string.IsNullOrWhiteSpace(Model.ControllerPage) ? $"~/{Model.ControllerPage.TrimStart('/')}" : "#");
+}
+
+<li class="nav-item mb-1">
+    @if (hasChildren)
+    {
+        <a href="#@collapseId" data-bs-toggle="collapse" class="nav-link text-white d-flex align-items-center justify-content-between py-2 px-3 rounded-2" aria-expanded="false">
+            <div class="d-flex align-items-center">
+                <i class="bi @iconClass me-3 fs-5"></i>
+                <span>@Model.Title</span>
+            </div>
+            <i class="bi bi-chevron-down small"></i>
+        </a>
+        <div class="collapse" id="@collapseId">
+            <ul class="nav flex-column ms-3 ps-2 border-start border-secondary mt-1">
+                @foreach (var child in Model.Children.OrderBy(c => c.DisplayOrder))
+                {
+                    @if (child.IsActive)
+                    {
+                        @await Html.PartialAsync("Components/SidebarMenu/_MenuNode", child)
+                    }
+                }
+            </ul>
+        </div>
+    }
+    else
+    {
+        <a href="@targetUrl" class="nav-link text-white d-flex align-items-center py-2 px-3 rounded-2">
+            <i class="bi @iconClass me-3 fs-5"></i>
+            <span>@Model.Title</span>
+        </a>
+    }
+</li>
