@@ -1,0 +1,70 @@
+@model MyApp.Web.ViewModels.MenuFormViewModel
+@{
+    ViewData["Title"] = "Create Menu";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-3">
+            <div class="card-header bg-white py-3">
+                <h5 class="fw-bold mb-0"><i class="bi bi-plus-circle me-2 text-primary"></i>Create Navigation Menu</h5>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="Create" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="ParentMenuId" class="form-label fw-semibold">Parent Menu (Optional)</label>
+                        <select asp-for="ParentMenuId" class="form-select">
+                            <option value="">-- Root Level Menu --</option>
+                            @foreach (var p in Model.ParentOptions)
+                            {
+                                <option value="@p.MenuId">@p.Title</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Title" class="form-label fw-semibold">Menu Title <span class="text-danger">*</span></label>
+                        <input asp-for="Title" class="form-control" required placeholder="e.g. Reports" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Icon" class="form-label fw-semibold">Bootstrap Icon Class</label>
+                        <input asp-for="Icon" class="form-control" placeholder="e.g. bi-bar-chart-fill" />
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="ControllerPage" class="form-label fw-semibold">Controller / Page</label>
+                            <input asp-for="ControllerPage" class="form-control" placeholder="e.g. Users" />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Route" class="form-label fw-semibold">Route (Optional)</label>
+                            <input asp-for="Route" class="form-control" placeholder="e.g. Users/Index" />
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4 align-items-center">
+                        <div class="col-md-6">
+                            <label asp-for="DisplayOrder" class="form-label fw-semibold">Display Order</label>
+                            <input asp-for="DisplayOrder" type="number" class="form-control" value="10" />
+                        </div>
+                        <div class="col-md-6 pt-md-4">
+                            <div class="form-check">
+                                <input asp-for="IsActive" class="form-check-input" />
+                                <label asp-for="IsActive" class="form-check-label fw-semibold">Active Status</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                        <a href="~/Menus" class="btn btn-outline-secondary px-4">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4">Save Menu</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,130 @@
+@model MyApp.Web.ViewModels.PermissionMatrixViewModel
+@{
+    ViewData["Title"] = "Role Permission Matrix";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">Role Permission Matrix</h3>
+        <p class="text-muted mb-0">Assign granular read/write privileges per role across every system module</p>
+    </div>
+    <div class="d-flex align-items-center gap-3">
+        <form method="get" class="d-flex align-items-center">
+            <label class="fw-semibold me-2 text-nowrap">Target Role:</label>
+            <select name="roleId" class="form-select form-select-sm" onchange="this.form.submit()" style="min-width: 200px;">
+                @foreach (var r in Model.Roles)
+                {
+                    <option value="@r.RoleId" selected="@(Model.SelectedRoleId == r.RoleId ? "selected" : null)">@r.RoleName</option>
+                }
+            </select>
+        </form>
+        <button type="button" id="btnSavePermissions" class="btn btn-primary" onclick="savePermissions(@Model.SelectedRoleId)">
+            <i class="bi bi-save-fill me-1"></i>Save Matrix
+        </button>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-3">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <span class="fw-bold">Privileges for Role: <span class="text-primary">@Model.SelectedRoleName</span></span>
+        <div>
+            <button type="button" class="btn btn-sm btn-outline-secondary me-1" onclick="toggleAllCheckboxes(true)">Grant All</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="toggleAllCheckboxes(false)">Revoke All</button>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="permissionMatrixTable">
+                <thead class="table-light">
+                    <tr>
+                        <th>Module / Menu Node</th>
+                        @foreach (var pt in Model.PermissionTypes)
+                        {
+                            <th class="text-center" title="@pt.Name">@pt.Code</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Matrix.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="@(Model.PermissionTypes.Count + 1)" class="text-center py-5 text-muted">No permission matrix rows available.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        var menuGroups = Model.Matrix.GroupBy(m => new { m.MenuId, m.MenuName }).ToList();
+                        foreach (var group in menuGroups)
+                        {
+                            <tr>
+                                <td class="fw-bold">
+                                    <i class="bi bi-folder2-open me-2 text-primary"></i>@group.Key.MenuName
+                                </td>
+                                @foreach (var pt in Model.PermissionTypes)
+                                {
+                                    var cell = group.FirstOrDefault(c => c.PermissionTypeId == pt.PermissionTypeId);
+                                    var isGranted = cell != null && cell.Granted;
+                                    <td class="text-center">
+                                        <div class="form-check d-flex justify-content-center">
+                                            <input class="form-check-input perm-checkbox" type="checkbox"
+                                                   data-menu-id="@group.Key.MenuId"
+                                                   data-perm-type="@pt.PermissionTypeId"
+                                                   checked="@(isGranted ? "checked" : null)" />
+                                        </div>
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function toggleAllCheckboxes(state) {
+            document.querySelectorAll('.perm-checkbox').forEach(cb => cb.checked = state);
+        }
+
+        async function savePermissions(roleId) {
+            const btn = document.getElementById('btnSavePermissions');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+
+            try {
+                const checkboxes = document.querySelectorAll('.perm-checkbox:checked');
+                const permissions = [];
+
+                checkboxes.forEach(cb => {
+                    permissions.push({
+                        menuId: parseInt(cb.getAttribute('data-menu-id')),
+                        permissionTypeId: parseInt(cb.getAttribute('data-perm-type'))
+                    });
+                });
+
+                const response = await fetch(`/Permissions/Assign?roleId=${roleId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                    },
+                    body: JSON.stringify(permissions)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert('Permissions saved successfully.');
+                } else {
+                    alert('Error: ' + (result.message || 'Failed to save permissions.'));
+                }
+            } catch (err) {
+                alert('Network error while saving permissions.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-save-fill me-1"></i>Save Matrix';
+            }
+        }
+    </script>
+}

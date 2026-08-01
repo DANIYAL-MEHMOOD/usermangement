@@ -1,0 +1,44 @@
+@model MyApp.Web.ViewModels.ErrorViewModel
+@{
+    ViewData["Title"] = "Error";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6 text-center">
+            <div class="card shadow-sm border-0 rounded-3 p-4">
+                <div class="card-body">
+                    <div class="mb-4 text-danger">
+                        <i class="bi bi-exclamation-triangle-fill display-1"></i>
+                    </div>
+                    <h2 class="fw-bold mb-3">Oops! Something went wrong</h2>
+                    <p class="text-muted mb-4">
+                        @Model.Message
+                        We apologize for the inconvenience. Our engineering team has been notified.
+                    </p>
+
+                    <div class="alert alert-light border text-start mb-4">
+                        <div class="row mb-1">
+                            <div class="col-sm-5 text-muted small">Reference Number:</div>
+                            <div class="col-sm-7 fw-semibold font-monospace small">@Model.ReferenceNumber</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-5 text-muted small">Request ID:</div>
+                            <div class="col-sm-7 fw-semibold font-monospace small">@Model.RequestId</div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                        <a href="~/Dashboard" class="btn btn-primary px-4">
+                            <i class="bi bi-house-door me-2"></i>Return to Dashboard
+                        </a>
+                        <button onclick="window.history.back()" class="btn btn-outline-secondary px-4">
+                            <i class="bi bi-arrow-left me-2"></i>Go Back
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,71 @@
+@model MyApp.Web.ViewModels.ProfileViewModel
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+            <div class="bg-primary text-white p-4 d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <div class="bg-white text-primary rounded-circle d-flex align-items-center justify-content-center me-3 fw-bold fs-3 shadow-sm" style="width: 70px; height: 70px;">
+                        @(string.IsNullOrEmpty(Model.Profile.FullName) ? "U" : Model.Profile.FullName.Substring(0, 1).ToUpper())
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-1">@Model.Profile.FullName</h4>
+                        <p class="mb-0 text-white-50"><i class="bi bi-shield-check me-1"></i>@Model.Profile.RoleName</p>
+                    </div>
+                </div>
+                <div>
+                    <a href="~/Profile/Edit" class="btn btn-light btn-sm me-2"><i class="bi bi-pencil me-1"></i>Edit Profile</a>
+                    <a href="~/Profile/ChangePassword" class="btn btn-outline-light btn-sm"><i class="bi bi-key me-1"></i>Change Password</a>
+                </div>
+            </div>
+            <div class="card-body p-4">
+                <h6 class="fw-bold text-muted mb-3"><i class="bi bi-person-badge me-2 text-primary"></i>Personal Information</h6>
+                <div class="row g-3 mb-4">
+                    <div class="col-sm-6">
+                        <label class="small text-muted mb-0">Username</label>
+                        <div class="fw-semibold">@Model.Profile.Username</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="small text-muted mb-0">Employee ID</label>
+                        <div class="fw-semibold font-monospace">@(Model.Profile.EmployeeNumber ?? "—")</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="small text-muted mb-0">Email Address</label>
+                        <div class="fw-semibold">@Model.Profile.Email</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="small text-muted mb-0">Phone Number</label>
+                        <div class="fw-semibold">@(Model.Profile.Phone ?? "—")</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="small text-muted mb-0">Designation</label>
+                        <div class="fw-semibold">@(Model.Profile.Designation ?? "—")</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="small text-muted mb-0">Department</label>
+                        <div class="fw-semibold">@(Model.Profile.Department ?? "—")</div>
+                    </div>
+                </div>
+
+                <h6 class="fw-bold text-muted mb-3 border-top pt-3"><i class="bi bi-gear me-2 text-primary"></i>User Preferences</h6>
+                <div class="row g-3">
+                    <div class="col-sm-4">
+                        <label class="small text-muted mb-0">UI Theme</label>
+                        <div class="fw-semibold text-capitalize">@Model.Profile.Theme</div>
+                    </div>
+                    <div class="col-sm-4">
+                        <label class="small text-muted mb-0">Language</label>
+                        <div class="fw-semibold">@Model.Profile.Language</div>
+                    </div>
+                    <div class="col-sm-4">
+                        <label class="small text-muted mb-0">Sidebar Layout</label>
+                        <div class="fw-semibold">@(Model.Profile.SidebarCollapsed ? "Collapsed" : "Expanded")</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

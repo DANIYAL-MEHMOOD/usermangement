@@ -1,0 +1,122 @@
+@model MyApp.Web.ViewModels.MenuListViewModel
+@{
+    ViewData["Title"] = "Menu Configuration";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">Navigation Menu Hierarchy</h3>
+        <p class="text-muted mb-0">Manage sidebar links, hierarchy order, and routes</p>
+    </div>
+    <div>
+        <a href="~/Menus/Create" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-2"></i>New Menu Node
+        </a>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-3">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Title</th>
+                        <th>Icon</th>
+                        <th>Controller / Route</th>
+                        <th>Order</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Menus.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">No navigation menus configured.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var parent in Model.Menus.OrderBy(m => m.DisplayOrder))
+                        {
+                            <tr class="table-light fw-bold">
+                                <td>
+                                    <i class="bi @(string.IsNullOrEmpty(parent.Icon) ? "bi-folder" : parent.Icon) me-2 text-primary"></i>
+                                    @parent.Title
+                                </td>
+                                <td><code>@parent.Icon</code></td>
+                                <td class="font-monospace small">@(parent.ControllerPage ?? parent.Route ?? "—")</td>
+                                <td>@parent.DisplayOrder</td>
+                                <td>
+                                    @if (parent.IsActive)
+                                    {
+                                        <span class="badge bg-success">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Inactive</span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="~/Menus/Create?parentId=@parent.MenuId" class="btn btn-outline-success" title="Add Child Menu">
+                                            <i class="bi bi-plus-circle"></i>
+                                        </a>
+                                        <a href="~/Menus/Edit/@parent.MenuId" class="btn btn-outline-secondary" title="Edit Menu">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <form asp-action="Delete" asp-route-id="@parent.MenuId" method="post" class="d-inline" onsubmit="return confirm('Delete menu @parent.Title?');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-outline-danger" title="Delete Menu">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            @if (parent.Children is { Count: > 0 })
+                            {
+                                @foreach (var child in parent.Children.OrderBy(c => c.DisplayOrder))
+                                {
+                                    <tr>
+                                        <td class="ps-5">
+                                            <i class="bi @(string.IsNullOrEmpty(child.Icon) ? "bi-circle" : child.Icon) me-2 text-muted"></i>
+                                            @child.Title
+                                        </td>
+                                        <td><code>@child.Icon</code></td>
+                                        <td class="font-monospace small">@(child.ControllerPage ?? child.Route ?? "—")</td>
+                                        <td>@child.DisplayOrder</td>
+                                        <td>
+                                            @if (child.IsActive)
+                                            {
+                                                <span class="badge bg-success">Active</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">Inactive</span>
+                                            }
+                                        </td>
+                                        <td class="text-end">
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="~/Menus/Edit/@child.MenuId" class="btn btn-outline-secondary" title="Edit Menu">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <form asp-action="Delete" asp-route-id="@child.MenuId" method="post" class="d-inline" onsubmit="return confirm('Delete menu @child.Title?');">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-outline-danger" title="Delete Menu">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

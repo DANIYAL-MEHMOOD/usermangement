@@ -1,0 +1,54 @@
+@model MyApp.Web.ViewModels.SettingsViewModel
+@{
+    ViewData["Title"] = "User Settings";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-3">
+            <div class="card-header bg-white py-3">
+                <h5 class="fw-bold mb-0"><i class="bi bi-gear-fill me-2 text-primary"></i>Interface & Account Settings</h5>
+            </div>
+            <div class="card-body p-4">
+                @if (!string.IsNullOrEmpty(Model.Message))
+                {
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle-fill me-2"></i> @Model.Message
+                    </div>
+                }
+
+                <form asp-action="Index" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div class="mb-4">
+                        <label asp-for="Theme" class="form-label fw-semibold">Interface Theme</label>
+                        <select asp-for="Theme" class="form-select">
+                            <option value="light">Light Theme</option>
+                            <option value="dark">Dark Theme</option>
+                            <option value="auto">System Auto</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Language" class="form-label fw-semibold">Language Preference</label>
+                        <select asp-for="Language" class="form-select">
+                            <option value="en">English (US)</option>
+                            <option value="es">Spanish (ES)</option>
+                            <option value="fr">French (FR)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-check form-switch mb-4">
+                        <input asp-for="SidebarCollapsed" class="form-check-input" type="checkbox" role="switch" id="sidebarSwitch">
+                        <label class="form-check-label fw-semibold" for="sidebarSwitch">Default to Collapsed Sidebar</label>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                        <a href="~/Dashboard" class="btn btn-outline-secondary px-4">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4">Save Settings</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
