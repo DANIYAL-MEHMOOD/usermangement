@@ -1,0 +1,17 @@
+E:\PAF\Claude\MyApp-Phase2-Screens\MyApp\src\MyApp.Infrastructure\bin\Debug\net8.0\MyApp.Infrastructure.deps.json
+E:\PAF\Claude\MyApp-Phase2-Screens\MyApp\src\MyApp.Infrastructure\bin\Debug\net8.0\MyApp.Infrastructure.dll
+E:\PAF\Claude\MyApp-Phase2-Screens\MyApp\src\MyApp.Infrastructure\bin\Debug\net8.0\MyApp.Infrastructure.pdb
+E:\PAF\Claude\MyApp-Phase2-Screens\MyApp\src\MyApp.Infrastructure\bin\Debug\net8.0\MyApp.Application.dll
+E:\PAF\Claude\MyApp-Phase2-Screens\MyApp\src\MyApp.Infrastructure\bin\Debug\net8.0\MyApp.Domain.dll
+E:\PAF\Claude\MyApp-Phase2-Screens\MyApp\src\MyApp.Infrastructure\bin\Debug\net8.0\MyApp.Application.pdb
+E:\PAF\Claude\MyApp-Phase2-Screens\MyApp\src\MyApp.Infrastructure\bin\Debug\net8.0\MyApp.Domain.pdb
+E:\PAF\Claude\MyApp-Phase2-Screens\MyApp\src\MyApp.Infrastructure\obj\Debug\net8.0\MyApp.Infrastructure.csproj.AssemblyReference.cache
+E:\PAF\Claude\MyApp-Phase2-Screens\MyApp\src\MyApp.Infrastructure\obj\Debug\net8.0\MyApp.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+E:\PAF\Claude\MyApp-Phase2-Screens\MyApp\src\MyApp.Infrastructure\obj\Debug\net8.0\MyApp.Infrastructure.AssemblyInfoInputs.cache
+E:\PAF\Claude\MyApp-Phase2-Screens\MyApp\src\MyApp.Infrastructure\obj\Debug\net8.0\MyApp.Infrastructure.AssemblyInfo.cs
+E:\PAF\Claude\MyApp-Phase2-Screens\MyApp\src\MyApp.Infrastructure\obj\Debug\net8.0\MyApp.Infrastructure.csproj.CoreCompileInputs.cache
+E:\PAF\Claude\MyApp-Phase2-Screens\MyApp\src\MyApp.Infrastructure\obj\Debug\net8.0\MyApp.In.4513676F.Up2Date
+E:\PAF\Claude\MyApp-Phase2-Screens\MyApp\src\MyApp.Infrastructure\obj\Debug\net8.0\MyApp.Infrastructure.dll
+E:\PAF\Claude\MyApp-Phase2-Screens\MyApp\src\MyApp.Infrastructure\obj\Debug\net8.0\refint\MyApp.Infrastructure.dll
+E:\PAF\Claude\MyApp-Phase2-Screens\MyApp\src\MyApp.Infrastructure\obj\Debug\net8.0\MyApp.Infrastructure.pdb
+E:\PAF\Claude\MyApp-Phase2-Screens\MyApp\src\MyApp.Infrastructure\obj\Debug\net8.0\ref\MyApp.Infrastructure.dll

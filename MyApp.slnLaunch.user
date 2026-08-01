@@ -1,0 +1,27 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "src\\MyApp.Web\\MyApp.Web.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "src\\MyApp.Api\\MyApp.Api.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "src\\MyApp.Domain\\MyApp.Domain.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "src\\MyApp.Application\\MyApp.Application.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "src\\MyApp.Infrastructure\\MyApp.Infrastructure.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

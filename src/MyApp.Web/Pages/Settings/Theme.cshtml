@@ -1,0 +1,58 @@
+@page
+@model MyApp.Web.Pages.Settings.ThemeModel
+@{ ViewData["Title"] = "Theme"; ViewData["Breadcrumb"] = "<li class=\"breadcrumb-item\">Settings</li><li class=\"breadcrumb-item active\">Theme</li>"; }
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Theme</h5>
+                <p class="text-muted small">Your choice is saved to your account and restored automatically the next time you sign in, on any device.</p>
+
+                <div class="btn-group w-100 mb-3" role="group">
+                    <input type="radio" class="btn-check" name="theme" id="themeLight" value="light" autocomplete="off">
+                    <label class="btn btn-outline-secondary" for="themeLight"><i class="bi bi-sun me-1"></i>Light</label>
+
+                    <input type="radio" class="btn-check" name="theme" id="themeDark" value="dark" autocomplete="off">
+                    <label class="btn btn-outline-secondary" for="themeDark"><i class="bi bi-moon-stars me-1"></i>Dark</label>
+
+                    <input type="radio" class="btn-check" name="theme" id="themeAuto" value="auto" autocomplete="off">
+                    <label class="btn btn-outline-secondary" for="themeAuto"><i class="bi bi-circle-half me-1"></i>Auto</label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function applyTheme(theme) {
+        const resolved = theme === 'auto'
+            ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+            : theme;
+        document.documentElement.setAttribute('data-bs-theme', resolved);
+        localStorage.setItem('theme', theme);
+    }
+
+    async function loadCurrentTheme() {
+        const { body } = await callApi('?handler=Current', { method: 'GET' });
+        const theme = (body && body.success && body.data?.theme) || localStorage.getItem('theme') || 'light';
+        document.getElementById(`theme${theme.charAt(0).toUpperCase()}${theme.slice(1)}`)?.setAttribute('checked', 'checked');
+        document.querySelector(`input[name="theme"][value="${theme}"]`).checked = true;
+    }
+
+    document.querySelectorAll('input[name="theme"]').forEach(radio => radio.addEventListener('change', async (e) => {
+        const theme = e.target.value;
+        applyTheme(theme);
+
+        const { body } = await callApi('?handler=Save', {
+            method: 'POST',
+            body: JSON.stringify({ theme, sidebarCollapsed: false, language: 'en' })
+        });
+        if (body && body.success) showToast('Theme saved.', 'success');
+        else showToast(body?.message || 'Could not save theme preference.', 'danger');
+    }));
+
+    loadCurrentTheme();
+</script>
+}

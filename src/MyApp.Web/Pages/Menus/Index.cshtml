@@ -1,0 +1,185 @@
+@page
+@model MyApp.Web.Pages.Menus.IndexModel
+@{
+    ViewData["Title"] = "Menu Management";
+    ViewData["Breadcrumb"] = "<li class=\"breadcrumb-item\">Settings</li><li class=\"breadcrumb-item active\">Menu Management</li>";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Menu Management</h4>
+    <button class="btn btn-primary btn-sm" onclick="openCreateModal(null)">
+        <i class="bi bi-plus-lg me-1"></i>New Root Menu
+    </button>
+</div>
+
+<p class="text-muted small">The entire sidebar is generated from this tree — nothing is hardcoded. Use the
+    <i class="bi bi-plus-circle"></i> next to any menu to add a child under it. Order controls position among siblings.</p>
+
+<div class="card">
+    <div class="card-body">
+        <div id="menuTree"><div class="skeleton" style="height: 200px;"></div></div>
+    </div>
+</div>
+
+<!-- Create / Edit modal -->
+<div class="modal fade" id="menuModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="menuForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="menuModalTitle">New Menu</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="menuId" />
+                    <input type="hidden" id="parentMenuId" />
+                    <p class="small text-muted" id="parentLabel"></p>
+                    <div class="mb-3">
+                        <label class="form-label">Menu Name *</label>
+                        <input class="form-control" id="menuName" required />
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Icon <span class="text-muted small">(Bootstrap Icons class)</span></label>
+                            <input class="form-control" id="menuIcon" placeholder="bi-house" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Order</label>
+                            <input type="number" class="form-control" id="menuOrder" value="0" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Controller/Page</label>
+                            <input class="form-control" id="controllerPage" placeholder="Users" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Route</label>
+                            <input class="form-control" id="route" placeholder="/users" />
+                        </div>
+                    </div>
+                    <div class="form-check mt-3">
+                        <input type="checkbox" class="form-check-input" id="menuStatus" checked />
+                        <label class="form-check-label">Active</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    let menuTreeData = [];
+
+    async function loadMenus() {
+        const { body } = await callApi('?handler=All', { method: 'GET' });
+        if (!body || !body.success) { showToast(body?.message || 'Failed to load menus.', 'danger'); return; }
+        menuTreeData = buildTree(body.data || []);
+        renderTree();
+    }
+
+    // The API returns Menu entities with Children already populated server-side
+    // (via MenuRepository.BuildTree), but rebuild defensively in case the shape
+    // ever comes back flat.
+    function buildTree(flat) {
+        if (flat.length && flat[0].children !== undefined) return flat;
+        const byId = new Map(flat.map(m => [m.menuId, { ...m, children: [] }]));
+        const roots = [];
+        byId.forEach(m => {
+            if (m.parentMenuId && byId.has(m.parentMenuId)) byId.get(m.parentMenuId).children.push(m);
+            else roots.push(m);
+        });
+        return roots;
+    }
+
+    function renderTree() {
+        const container = document.getElementById('menuTree');
+        container.innerHTML = menuTreeData.length
+            ? `<ul class="list-unstyled mb-0">${menuTreeData.sort((a,b)=>a.menuOrder-b.menuOrder).map(renderNode).join('')}</ul>`
+            : '<p class="text-muted text-center py-4">No menus yet.</p>';
+    }
+
+    function renderNode(node) {
+        const children = (node.children || []).sort((a, b) => a.menuOrder - b.menuOrder);
+        return `
+        <li class="mb-1">
+            <div class="d-flex align-items-center justify-content-between border rounded px-2 py-1">
+                <span><i class="bi ${node.menuIcon || 'bi-dot'} me-2"></i>${escapeHtml(node.menuName)}
+                    ${node.status ? '' : '<span class="badge text-bg-secondary ms-2">Inactive</span>'}
+                    <span class="text-muted small ms-2">order ${node.menuOrder}</span></span>
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-secondary" title="Add child" onclick="openCreateModal(${node.menuId})"><i class="bi bi-plus-circle"></i></button>
+                    <button class="btn btn-outline-secondary" title="Edit" onclick='openEditModal(${JSON.stringify(node)})'><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-outline-danger" title="Delete" onclick="deleteMenu(${node.menuId})"><i class="bi bi-trash"></i></button>
+                </div>
+            </div>
+            ${children.length ? `<ul class="list-unstyled ps-4 mt-1">${children.map(renderNode).join('')}</ul>` : ''}
+        </li>`;
+    }
+
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str ?? '';
+        return div.innerHTML;
+    }
+
+    function openCreateModal(parentMenuId) {
+        document.getElementById('menuForm').reset();
+        document.getElementById('menuId').value = '';
+        document.getElementById('parentMenuId').value = parentMenuId ?? '';
+        document.getElementById('parentLabel').textContent = parentMenuId ? `New child menu under menu #${parentMenuId}` : 'New root-level menu';
+        document.getElementById('menuModalTitle').textContent = 'New Menu';
+        document.getElementById('menuStatus').checked = true;
+        new bootstrap.Modal(document.getElementById('menuModal')).show();
+    }
+
+    function openEditModal(node) {
+        document.getElementById('menuId').value = node.menuId;
+        document.getElementById('parentMenuId').value = node.parentMenuId ?? '';
+        document.getElementById('parentLabel').textContent = '';
+        document.getElementById('menuName').value = node.menuName;
+        document.getElementById('menuIcon').value = node.menuIcon || '';
+        document.getElementById('menuOrder').value = node.menuOrder;
+        document.getElementById('controllerPage').value = node.controllerPage || '';
+        document.getElementById('route').value = node.route || '';
+        document.getElementById('menuStatus').checked = node.status;
+        document.getElementById('menuModalTitle').textContent = 'Edit Menu';
+        new bootstrap.Modal(document.getElementById('menuModal')).show();
+    }
+
+    document.getElementById('menuForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const idValue = document.getElementById('menuId').value;
+        const parentValue = document.getElementById('parentMenuId').value;
+        const payload = {
+            menuId: idValue ? parseInt(idValue, 10) : null,
+            parentMenuId: parentValue ? parseInt(parentValue, 10) : null,
+            menuName: document.getElementById('menuName').value,
+            menuIcon: document.getElementById('menuIcon').value || null,
+            controllerPage: document.getElementById('controllerPage').value || null,
+            route: document.getElementById('route').value || null,
+            menuOrder: parseInt(document.getElementById('menuOrder').value, 10) || 0,
+            status: document.getElementById('menuStatus').checked
+        };
+        const { body } = await callApi('?handler=Save', { method: 'POST', body: JSON.stringify(payload) });
+        if (body && body.success) {
+            showToast(body.message || 'Menu saved.', 'success');
+            bootstrap.Modal.getInstance(document.getElementById('menuModal'))?.hide();
+            loadMenus();
+        } else showToast(body?.message || 'Save failed.', 'danger');
+    });
+
+    async function deleteMenu(id) {
+        const confirmed = await confirmDialog('Delete this menu? It must have no child menus.', 'Delete menu');
+        if (!confirmed) return;
+        const { body } = await callApi(`?handler=Delete&id=${id}`, { method: 'POST' });
+        if (body && body.success) { showToast(body.message, 'success'); loadMenus(); }
+        else showToast(body?.message || 'Delete failed.', 'danger');
+    }
+
+    loadMenus();
+</script>
+}

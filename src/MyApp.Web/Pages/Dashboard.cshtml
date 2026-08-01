@@ -1,0 +1,61 @@
+@page
+@model MyApp.Web.Pages.DashboardModel
+@{ ViewData["Title"] = "Dashboard"; ViewData["Breadcrumb"] = "<li class=\"breadcrumb-item active\">Dashboard</li>"; }
+
+<h4 class="mb-3">Welcome, @HttpContext.Session.GetString("FullName")</h4>
+
+<div class="row g-3 mb-4" id="summaryCards">
+    <div class="col-md-3"><div class="card"><div class="card-body"><div class="skeleton" style="height:50px;"></div></div></div></div>
+    <div class="col-md-3"><div class="card"><div class="card-body"><div class="skeleton" style="height:50px;"></div></div></div></div>
+    <div class="col-md-3"><div class="card"><div class="card-body"><div class="skeleton" style="height:50px;"></div></div></div></div>
+    <div class="col-md-3"><div class="card"><div class="card-body"><div class="skeleton" style="height:50px;"></div></div></div></div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Recent Logins</div>
+            <ul class="list-group list-group-flush" id="recentLogins"></ul>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Recent Activity</div>
+            <ul class="list-group list-group-flush" id="recentActivity"></ul>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    async function loadDashboardData() {
+        const { body } = await callApi('?handler=Data', { method: 'GET' });
+        if (!body || !body.success) return;
+        const d = body.data;
+
+        document.getElementById('summaryCards').innerHTML = `
+            <div class="col-md-3"><div class="card"><div class="card-body">
+                <div class="text-muted small">Total Users</div><div class="fs-3">${d.summary.totalUsers}</div></div></div></div>
+            <div class="col-md-3"><div class="card"><div class="card-body">
+                <div class="text-muted small">Active Users</div><div class="fs-3">${d.summary.activeUsers}</div></div></div></div>
+            <div class="col-md-3"><div class="card"><div class="card-body">
+                <div class="text-muted small">Online Now</div><div class="fs-3">${d.summary.onlineUsers}</div></div></div></div>
+            <div class="col-md-3"><div class="card"><div class="card-body">
+                <div class="text-muted small">Total Roles</div><div class="fs-3">${d.summary.totalRoles}</div></div></div></div>`;
+
+        document.getElementById('recentLogins').innerHTML = (d.recentLogins || []).map(l => `
+            <li class="list-group-item d-flex justify-content-between">
+                <span>${l.fullName}</span>
+                <span class="text-muted small">${l.lastLogin ? new Date(l.lastLogin).toLocaleString() : ''}</span>
+            </li>`).join('') || '<li class="list-group-item text-muted">No recent logins.</li>';
+
+        document.getElementById('recentActivity').innerHTML = (d.recentActivity || []).map(a => `
+            <li class="list-group-item d-flex justify-content-between">
+                <span>${a.fullName || 'System'} — ${a.module}/${a.action}</span>
+                <span class="text-muted small">${new Date(a.actionDate).toLocaleString()}</span>
+            </li>`).join('') || '<li class="list-group-item text-muted">No recent activity.</li>';
+    }
+
+    loadDashboardData();
+</script>
+}

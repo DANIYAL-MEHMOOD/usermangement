@@ -1,0 +1,29 @@
+@model MyApp.Web.ViewComponents.MenuNode
+
+@{
+    var hasChildren = Model.Children is { Count: > 0 };
+    var collapseId = $"menu-{Model.MenuId}";
+    var href = string.IsNullOrEmpty(Model.Route) ? "#" : Model.Route;
+}
+
+<div class="menu-item" data-name="@Model.MenuName.ToLower()">
+    @if (hasChildren)
+    {
+        <a class="nav-link sidebar-link d-flex align-items-center justify-content-between" data-bs-toggle="collapse" href="#@collapseId" role="button">
+            <span><i class="bi @(Model.MenuIcon ?? "bi-dot") me-2"></i>@Model.MenuName</span>
+            <i class="bi bi-chevron-down small"></i>
+        </a>
+        <div class="collapse ps-3" id="@collapseId">
+            @foreach (var child in Model.Children.OrderBy(c => c.MenuOrder))
+            {
+                @await Html.PartialAsync("Components/SidebarMenu/_MenuNode", child)
+            }
+        </div>
+    }
+    else
+    {
+        <a class="nav-link sidebar-link" href="@href">
+            <i class="bi @(Model.MenuIcon ?? "bi-dot") me-2"></i>@Model.MenuName
+        </a>
+    }
+</div>

@@ -1,0 +1,334 @@
+@page
+@model MyApp.Web.Pages.Users.IndexModel
+@{
+    ViewData["Title"] = "Users";
+    ViewData["Breadcrumb"] = "<li class=\"breadcrumb-item\">User Management</li><li class=\"breadcrumb-item active\">Users</li>";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Users</h4>
+    @if (Model.IsAdministrator)
+    {
+        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#userModal" onclick="openCreateModal()">
+            <i class="bi bi-plus-lg me-1"></i>Add User
+        </button>
+    }
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <div class="row g-2">
+            <div class="col-md-4">
+                <input type="text" id="searchTerm" class="form-control form-control-sm" placeholder="Search name, username, email..." />
+            </div>
+            <div class="col-md-3">
+                <select id="filterRole" class="form-select form-select-sm">
+                    <option value="">All Roles</option>
+                    @foreach (var role in Model.Roles)
+                    {
+                        <option value="@role.RoleId">@role.RoleName</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select id="filterStatus" class="form-select form-select-sm">
+                    <option value="">All Statuses</option>
+                    <option value="1">Active</option>
+                    <option value="0">Inactive</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select id="pageSize" class="form-select form-select-sm">
+                    <option value="10">10 / page</option>
+                    <option value="25" selected>25 / page</option>
+                    <option value="50">50 / page</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th class="sortable" data-column="FullName">Name <i class="bi bi-arrow-down-up small"></i></th>
+                    <th class="sortable" data-column="Username">Username <i class="bi bi-arrow-down-up small"></i></th>
+                    <th class="sortable" data-column="Email">Email <i class="bi bi-arrow-down-up small"></i></th>
+                    <th class="sortable" data-column="Department">Department <i class="bi bi-arrow-down-up small"></i></th>
+                    <th>Role</th>
+                    <th class="sortable" data-column="Status">Status <i class="bi bi-arrow-down-up small"></i></th>
+                    <th class="sortable" data-column="LastLogin">Last Login <i class="bi bi-arrow-down-up small"></i></th>
+                    @if (Model.IsAdministrator)
+                    {
+                        <th class="text-end">Actions</th>
+                    }
+                </tr>
+            </thead>
+            <tbody id="userTableBody">
+                <tr><td colspan="8"><div class="skeleton" style="height: 20px;"></div></td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer d-flex justify-content-between align-items-center">
+        <span class="small text-muted" id="pageSummary"></span>
+        <nav><ul class="pagination pagination-sm mb-0" id="pagination"></ul></nav>
+    </div>
+</div>
+
+<!-- Create / Edit modal -->
+<div class="modal fade" id="userModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form id="userForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="userModalTitle">Add User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="userId" />
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Employee Number</label>
+                            <input class="form-control" id="employeeNumber" />
+                        </div>
+                        <div class="col-md-6" id="usernameField">
+                            <label class="form-label">Username *</label>
+                            <input class="form-control" id="username" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Full Name *</label>
+                            <input class="form-control" id="fullName" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email *</label>
+                            <input type="email" class="form-control" id="email" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Phone</label>
+                            <input class="form-control" id="phone" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Designation</label>
+                            <input class="form-control" id="designation" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Department</label>
+                            <input class="form-control" id="department" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Role *</label>
+                            <select class="form-select" id="roleId" required>
+                                @foreach (var role in Model.Roles)
+                                {
+                                    <option value="@role.RoleId">@role.RoleName</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6" id="passwordField">
+                            <label class="form-label">Password *</label>
+                            <input type="password" class="form-control" id="password" />
+                        </div>
+                        <div class="col-md-6" id="confirmPasswordField">
+                            <label class="form-label">Confirm Password *</label>
+                            <input type="password" class="form-control" id="confirmPassword" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const isAdmin = @Model.IsAdministrator.ToString().ToLower();
+    let state = { pageNumber: 1, pageSize: 25, sortColumn: 'FullName', sortDirection: 'ASC' };
+    let debounceTimer;
+
+    function statusBadge(status) {
+        return status === 1
+            ? '<span class="badge text-bg-success">Active</span>'
+            : '<span class="badge text-bg-secondary">Inactive</span>';
+    }
+
+    async function loadUsers() {
+        const tbody = document.getElementById('userTableBody');
+        tbody.innerHTML = `<tr><td colspan="8"><div class="skeleton" style="height:20px;"></div></td></tr>`;
+
+        const params = new URLSearchParams({
+            handler: 'Search',
+            searchTerm: document.getElementById('searchTerm').value,
+            roleId: document.getElementById('filterRole').value,
+            status: document.getElementById('filterStatus').value,
+            pageSize: state.pageSize,
+            pageNumber: state.pageNumber,
+            sortColumn: state.sortColumn,
+            sortDirection: state.sortDirection
+        });
+
+        const { body } = await callApi(`?${params.toString()}`, { method: 'GET' });
+        if (!body || !body.success) { showToast(body?.message || 'Failed to load users.', 'danger'); return; }
+
+        const users = body.data || [];
+        const pagination = body.pagination;
+
+        tbody.innerHTML = users.length ? users.map(u => `
+            <tr>
+                <td>${escapeHtml(u.fullName)}</td>
+                <td>${escapeHtml(u.username)}</td>
+                <td>${escapeHtml(u.email)}</td>
+                <td>${escapeHtml(u.department || '-')}</td>
+                <td>${escapeHtml(u.roleName)}</td>
+                <td>${statusBadge(u.status)}</td>
+                <td>${u.lastLogin ? new Date(u.lastLogin).toLocaleString() : 'Never'}</td>
+                ${isAdmin ? `<td class="text-end">
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-secondary" onclick='openEditModal(${JSON.stringify(u)})'><i class="bi bi-pencil"></i></button>
+                        ${u.status === 1
+                            ? `<button class="btn btn-outline-warning" onclick="toggleStatus(${u.userId}, false)"><i class="bi bi-slash-circle"></i></button>`
+                            : `<button class="btn btn-outline-success" onclick="toggleStatus(${u.userId}, true)"><i class="bi bi-check-circle"></i></button>`}
+                        <button class="btn btn-outline-danger" onclick="deleteUser(${u.userId})"><i class="bi bi-trash"></i></button>
+                    </div>
+                </td>` : ''}
+            </tr>
+        `).join('') : `<tr><td colspan="8" class="text-center text-muted py-4">No users found.</td></tr>`;
+
+        renderPagination(pagination);
+    }
+
+    function renderPagination(p) {
+        const summary = document.getElementById('pageSummary');
+        const nav = document.getElementById('pagination');
+        if (!p) { summary.textContent = ''; nav.innerHTML = ''; return; }
+
+        summary.textContent = `Showing page ${p.pageNumber} of ${Math.max(p.totalPages, 1)} (${p.totalCount} total)`;
+
+        let html = '';
+        for (let i = 1; i <= p.totalPages; i++) {
+            html += `<li class="page-item ${i === p.pageNumber ? 'active' : ''}">
+                <a class="page-link" href="#" onclick="goToPage(${i}); return false;">${i}</a></li>`;
+        }
+        nav.innerHTML = html;
+    }
+
+    function goToPage(page) { state.pageNumber = page; loadUsers(); }
+
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str ?? '';
+        return div.innerHTML;
+    }
+
+    ['searchTerm'].forEach(id => document.getElementById(id).addEventListener('input', () => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => { state.pageNumber = 1; loadUsers(); }, 350);
+    }));
+    ['filterRole', 'filterStatus', 'pageSize'].forEach(id => document.getElementById(id).addEventListener('change', () => {
+        state.pageSize = parseInt(document.getElementById('pageSize').value, 10);
+        state.pageNumber = 1;
+        loadUsers();
+    }));
+    document.querySelectorAll('.sortable').forEach(th => th.addEventListener('click', () => {
+        const column = th.dataset.column;
+        state.sortDirection = (state.sortColumn === column && state.sortDirection === 'ASC') ? 'DESC' : 'ASC';
+        state.sortColumn = column;
+        loadUsers();
+    }));
+
+    function openCreateModal() {
+        document.getElementById('userForm').reset();
+        document.getElementById('userId').value = '';
+        document.getElementById('userModalTitle').textContent = 'Add User';
+        document.getElementById('usernameField').style.display = '';
+        document.getElementById('passwordField').style.display = '';
+        document.getElementById('confirmPasswordField').style.display = '';
+        document.getElementById('username').required = true;
+        document.getElementById('password').required = true;
+        document.getElementById('confirmPassword').required = true;
+    }
+
+    function openEditModal(u) {
+        document.getElementById('userForm').reset();
+        document.getElementById('userId').value = u.userId;
+        document.getElementById('userModalTitle').textContent = 'Edit User';
+        document.getElementById('employeeNumber').value = u.employeeNumber || '';
+        document.getElementById('fullName').value = u.fullName;
+        document.getElementById('email').value = u.email;
+        document.getElementById('phone').value = u.phone || '';
+        document.getElementById('designation').value = u.designation || '';
+        document.getElementById('department').value = u.department || '';
+        document.getElementById('roleId').value = u.roleId;
+        document.getElementById('usernameField').style.display = 'none';
+        document.getElementById('passwordField').style.display = 'none';
+        document.getElementById('confirmPasswordField').style.display = 'none';
+        document.getElementById('username').required = false;
+        document.getElementById('password').required = false;
+        document.getElementById('confirmPassword').required = false;
+        new bootstrap.Modal(document.getElementById('userModal')).show();
+    }
+
+    document.getElementById('userForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('userId').value;
+        const isEdit = !!id;
+
+        const payload = isEdit ? {
+            employeeNumber: document.getElementById('employeeNumber').value || null,
+            fullName: document.getElementById('fullName').value,
+            email: document.getElementById('email').value,
+            phone: document.getElementById('phone').value || null,
+            designation: document.getElementById('designation').value || null,
+            department: document.getElementById('department').value || null,
+            roleId: parseInt(document.getElementById('roleId').value, 10)
+        } : {
+            employeeNumber: document.getElementById('employeeNumber').value || null,
+            username: document.getElementById('username').value,
+            password: document.getElementById('password').value,
+            confirmPassword: document.getElementById('confirmPassword').value,
+            fullName: document.getElementById('fullName').value,
+            email: document.getElementById('email').value,
+            phone: document.getElementById('phone').value || null,
+            designation: document.getElementById('designation').value || null,
+            department: document.getElementById('department').value || null,
+            roleId: parseInt(document.getElementById('roleId').value, 10)
+        };
+
+        const url = isEdit ? `?handler=Update&id=${id}` : `?handler=Create`;
+        const { body } = await callApi(url, { method: 'POST', body: JSON.stringify(payload) });
+
+        if (body && body.success) {
+            showToast(body.message || 'Saved.', 'success');
+            bootstrap.Modal.getInstance(document.getElementById('userModal'))?.hide();
+            loadUsers();
+        } else {
+            showToast(body?.message || 'Save failed.', 'danger');
+        }
+    });
+
+    async function toggleStatus(id, activate) {
+        const confirmed = await confirmDialog(`${activate ? 'Activate' : 'Deactivate'} this user?`, 'Confirm status change');
+        if (!confirmed) return;
+
+        const { body } = await callApi(`?handler=${activate ? 'Activate' : 'Deactivate'}&id=${id}`, { method: 'POST' });
+        if (body && body.success) { showToast(body.message, 'success'); loadUsers(); }
+        else showToast(body?.message || 'Action failed.', 'danger');
+    }
+
+    async function deleteUser(id) {
+        const confirmed = await confirmDialog('This will deactivate and soft-delete the user. Continue?', 'Delete user');
+        if (!confirmed) return;
+
+        const { body } = await callApi(`?handler=Delete&id=${id}`, { method: 'POST' });
+        if (body && body.success) { showToast(body.message, 'success'); loadUsers(); }
+        else showToast(body?.message || 'Delete failed.', 'danger');
+    }
+
+    loadUsers();
+</script>
+}

@@ -1,0 +1,121 @@
+@page
+@model MyApp.Web.Pages.Permissions.IndexModel
+@{
+    ViewData["Title"] = "Permission Matrix";
+    ViewData["Breadcrumb"] = "<li class=\"breadcrumb-item\">Settings</li><li class=\"breadcrumb-item active\">Permission Matrix</li>";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Permission Matrix</h4>
+    <div class="d-flex gap-2 align-items-center">
+        <label class="form-label mb-0 small text-muted">Role:</label>
+        <select id="roleSelect" class="form-select form-select-sm" style="width: 220px;">
+            @foreach (var role in Model.Roles)
+            {
+                <option value="@role.RoleId" selected="@(role.RoleId == Model.RoleId)">@role.RoleName</option>
+            }
+        </select>
+        <button class="btn btn-primary btn-sm" id="saveBtn"><i class="bi bi-check-lg me-1"></i>Save Changes</button>
+    </div>
+</div>
+
+<p class="text-muted small">One screen manages every menu's permissions for the selected role. Check a box to grant that
+    action on that menu; unchecked means denied. Changes apply only after Save.</p>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle mb-0" id="matrixTable">
+            <thead class="table-light">
+                <tr><td colspan="9"><div class="skeleton" style="height:20px;"></div></td></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    let currentRoleId = @(Model.RoleId?.ToString() ?? "null");
+    let matrixData = []; // flat cells from the API
+    let dirty = new Map(); // key `${menuId}:${permissionTypeId}` -> boolean
+
+    function cellKey(menuId, permissionTypeId) { return `${menuId}:${permissionTypeId}`; }
+
+    async function loadMatrix() {
+        if (!currentRoleId) return;
+        const table = document.getElementById('matrixTable');
+        table.querySelector('thead').innerHTML = `<tr><td colspan="9"><div class="skeleton" style="height:20px;"></div></td></tr>`;
+        table.querySelector('tbody').innerHTML = '';
+        dirty.clear();
+
+        const { body } = await callApi(`?handler=Matrix&roleId=${currentRoleId}`, { method: 'GET' });
+        if (!body || !body.success) { showToast(body?.message || 'Failed to load permissions.', 'danger'); return; }
+
+        matrixData = body.data || [];
+        renderMatrix();
+    }
+
+    function renderMatrix() {
+        const permTypes = [...new Map(matrixData.map(c => [c.permissionTypeId, c])).values()]
+            .sort((a, b) => a.permissionTypeId - b.permissionTypeId);
+
+        const menus = [...new Map(matrixData.map(c => [c.menuId, c])).values()]
+            .sort((a, b) => (a.parentMenuId ?? 0) - (b.parentMenuId ?? 0) || a.menuId - b.menuId);
+
+        const thead = document.getElementById('matrixTable').querySelector('thead');
+        thead.innerHTML = `<tr><th>Menu</th>${permTypes.map(p => `<th class="text-center">${p.code}</th>`).join('')}</tr>`;
+
+        const tbody = document.getElementById('matrixTable').querySelector('tbody');
+        tbody.innerHTML = menus.map(m => {
+            const indent = m.parentMenuId ? 'ps-4' : '';
+            const cells = permTypes.map(p => {
+                const cell = matrixData.find(c => c.menuId === m.menuId && c.permissionTypeId === p.permissionTypeId);
+                const checked = cell ? cell.granted : false;
+                return `<td class="text-center">
+                    <input type="checkbox" class="form-check-input matrix-cell"
+                        data-menu-id="${m.menuId}" data-permission-type-id="${p.permissionTypeId}"
+                        ${checked ? 'checked' : ''} />
+                </td>`;
+            }).join('');
+            return `<tr><td class="${indent}">${escapeHtml(m.menuName)}</td>${cells}</tr>`;
+        }).join('');
+
+        document.querySelectorAll('.matrix-cell').forEach(cb => cb.addEventListener('change', (e) => {
+            const key = cellKey(e.target.dataset.menuId, e.target.dataset.permissionTypeId);
+            dirty.set(key, e.target.checked);
+        }));
+    }
+
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str ?? '';
+        return div.innerHTML;
+    }
+
+    document.getElementById('roleSelect').addEventListener('change', (e) => {
+        currentRoleId = e.target.value;
+        loadMatrix();
+    });
+
+    document.getElementById('saveBtn').addEventListener('click', async () => {
+        // Full-replace save: every currently-checked cell on screen, not just the deltas —
+        // matches sp_AssignPermissions's full-replace semantics.
+        const permissions = [];
+        document.querySelectorAll('.matrix-cell').forEach(cb => {
+            if (cb.checked) {
+                permissions.push({ menuId: parseInt(cb.dataset.menuId, 10), permissionTypeId: parseInt(cb.dataset.permissionTypeId, 10) });
+            }
+        });
+
+        const { body } = await callApi('?handler=Assign', {
+            method: 'POST',
+            body: JSON.stringify({ roleId: parseInt(currentRoleId, 10), permissions })
+        });
+
+        if (body && body.success) showToast(body.message || 'Permissions saved.', 'success');
+        else showToast(body?.message || 'Save failed.', 'danger');
+    });
+
+    loadMatrix();
+</script>
+}

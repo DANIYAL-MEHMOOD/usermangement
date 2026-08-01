@@ -1,0 +1,74 @@
+/* Theme engine: light/dark/auto driven entirely by CSS variables so new
+   themes can be added later without touching markup or C#. */
+:root {
+    --bg-body: #f5f7fa;
+    --bg-surface: #ffffff;
+    --text-primary: #1f2937;
+    --border-color: #e5e7eb;
+    --sidebar-bg: #1f2937;
+    --sidebar-text: #d1d5db;
+    --accent: #2563eb;
+}
+
+[data-bs-theme="dark"] {
+    --bg-body: #0f172a;
+    --bg-surface: #1e293b;
+    --text-primary: #e2e8f0;
+    --border-color: #334155;
+    --sidebar-bg: #0b1220;
+    --sidebar-text: #cbd5e1;
+    --accent: #3b82f6;
+}
+
+body {
+    background-color: var(--bg-body);
+    color: var(--text-primary);
+}
+
+.card, .modal-content {
+    background-color: var(--bg-surface);
+    border-color: var(--border-color);
+}
+
+/* ---- Admin shell layout ---- */
+html, body { height: 100%; }
+.app-shell { display: flex; min-height: 100vh; }
+
+.app-sidebar {
+    width: 260px;
+    flex-shrink: 0;
+    background-color: var(--sidebar-bg);
+    color: var(--sidebar-text);
+    transition: width 0.2s ease;
+    overflow-y: auto;
+}
+.app-shell.collapsed .app-sidebar { width: 72px; }
+.app-shell.collapsed .app-sidebar span, .app-shell.collapsed .app-sidebar #menuSearch { display: none; }
+
+.sidebar-link {
+    color: var(--sidebar-text);
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.375rem;
+    display: block;
+}
+.sidebar-link:hover { background-color: rgba(255,255,255,0.08); color: #fff; }
+
+.app-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.app-topbar {
+    height: 56px;
+    background-color: var(--bg-surface);
+    border-bottom: 1px solid var(--border-color);
+}
+.app-content { flex: 1; }
+.app-footer { border-top: 1px solid var(--border-color); background-color: var(--bg-surface); }
+
+.skeleton {
+    background: linear-gradient(90deg, var(--border-color) 25%, rgba(0,0,0,0.03) 37%, var(--border-color) 63%);
+    background-size: 400% 100%;
+    animation: skeleton-loading 1.4s ease infinite;
+    border-radius: 0.25rem;
+}
+@keyframes skeleton-loading {
+    0% { background-position: 100% 50%; }
+    100% { background-position: 0 50%; }
+}

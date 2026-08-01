@@ -1,0 +1,92 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "E:\\PAF\\Claude\\MyApp-Phase2-Screens\\MyApp\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{11111111-0000-0000-0000-000000000004}|src\\MyApp.Api\\MyApp.Api.csproj|e:\\paf\\claude\\myapp-phase2-screens\\myapp\\src\\myapp.api\\controllers\\dashboardcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{11111111-0000-0000-0000-000000000004}|src\\MyApp.Api\\MyApp.Api.csproj|solutionrelative:src\\myapp.api\\controllers\\dashboardcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{11111111-0000-0000-0000-000000000004}|src\\MyApp.Api\\MyApp.Api.csproj|e:\\paf\\claude\\myapp-phase2-screens\\myapp\\src\\myapp.api\\controllers\\menuscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{11111111-0000-0000-0000-000000000004}|src\\MyApp.Api\\MyApp.Api.csproj|solutionrelative:src\\myapp.api\\controllers\\menuscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{11111111-0000-0000-0000-000000000004}|src\\MyApp.Api\\MyApp.Api.csproj|e:\\paf\\claude\\myapp-phase2-screens\\myapp\\src\\myapp.api\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{11111111-0000-0000-0000-000000000004}|src\\MyApp.Api\\MyApp.Api.csproj|solutionrelative:src\\myapp.api\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{11111111-0000-0000-0000-000000000004}|src\\MyApp.Api\\MyApp.Api.csproj|e:\\paf\\claude\\myapp-phase2-screens\\myapp\\src\\myapp.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{11111111-0000-0000-0000-000000000004}|src\\MyApp.Api\\MyApp.Api.csproj|solutionrelative:src\\myapp.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:254354193:0:{71f361cc-493f-47c0-923f-f2570b6f8618}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "DashboardController.cs",
+              "DocumentMoniker": "E:\\PAF\\Claude\\MyApp-Phase2-Screens\\MyApp\\src\\MyApp.Api\\Controllers\\DashboardController.cs",
+              "RelativeDocumentMoniker": "src\\MyApp.Api\\Controllers\\DashboardController.cs",
+              "ToolTip": "E:\\PAF\\Claude\\MyApp-Phase2-Screens\\MyApp\\src\\MyApp.Api\\Controllers\\DashboardController.cs",
+              "RelativeToolTip": "src\\MyApp.Api\\Controllers\\DashboardController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-01T10:53:53.983Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "MenusController.cs",
+              "DocumentMoniker": "E:\\PAF\\Claude\\MyApp-Phase2-Screens\\MyApp\\src\\MyApp.Api\\Controllers\\MenusController.cs",
+              "RelativeDocumentMoniker": "src\\MyApp.Api\\Controllers\\MenusController.cs",
+              "ToolTip": "E:\\PAF\\Claude\\MyApp-Phase2-Screens\\MyApp\\src\\MyApp.Api\\Controllers\\MenusController.cs",
+              "RelativeToolTip": "src\\MyApp.Api\\Controllers\\MenusController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-01T10:53:43.908Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "AuthController.cs",
+              "DocumentMoniker": "E:\\PAF\\Claude\\MyApp-Phase2-Screens\\MyApp\\src\\MyApp.Api\\Controllers\\AuthController.cs",
+              "RelativeDocumentMoniker": "src\\MyApp.Api\\Controllers\\AuthController.cs",
+              "ToolTip": "E:\\PAF\\Claude\\MyApp-Phase2-Screens\\MyApp\\src\\MyApp.Api\\Controllers\\AuthController.cs",
+              "RelativeToolTip": "src\\MyApp.Api\\Controllers\\AuthController.cs",
+              "ViewState": "AgIAAD4AAAAAAAAAAAAAwEkAAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-01T10:30:16.08Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "E:\\PAF\\Claude\\MyApp-Phase2-Screens\\MyApp\\src\\MyApp.Api\\appsettings.json",
+              "RelativeDocumentMoniker": "src\\MyApp.Api\\appsettings.json",
+              "ToolTip": "E:\\PAF\\Claude\\MyApp-Phase2-Screens\\MyApp\\src\\MyApp.Api\\appsettings.json",
+              "RelativeToolTip": "src\\MyApp.Api\\appsettings.json",
+              "ViewState": "AgIAABgAAAAAAAAAAAAAAAkAAAB/AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-08-01T10:09:32.084Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

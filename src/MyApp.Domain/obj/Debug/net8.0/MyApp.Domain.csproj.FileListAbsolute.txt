@@ -1,0 +1,11 @@
+E:\PAF\Claude\MyApp-Phase2-Screens\MyApp\src\MyApp.Domain\bin\Debug\net8.0\MyApp.Domain.deps.json
+E:\PAF\Claude\MyApp-Phase2-Screens\MyApp\src\MyApp.Domain\bin\Debug\net8.0\MyApp.Domain.dll
+E:\PAF\Claude\MyApp-Phase2-Screens\MyApp\src\MyApp.Domain\bin\Debug\net8.0\MyApp.Domain.pdb
+E:\PAF\Claude\MyApp-Phase2-Screens\MyApp\src\MyApp.Domain\obj\Debug\net8.0\MyApp.Domain.GeneratedMSBuildEditorConfig.editorconfig
+E:\PAF\Claude\MyApp-Phase2-Screens\MyApp\src\MyApp.Domain\obj\Debug\net8.0\MyApp.Domain.AssemblyInfoInputs.cache
+E:\PAF\Claude\MyApp-Phase2-Screens\MyApp\src\MyApp.Domain\obj\Debug\net8.0\MyApp.Domain.AssemblyInfo.cs
+E:\PAF\Claude\MyApp-Phase2-Screens\MyApp\src\MyApp.Domain\obj\Debug\net8.0\MyApp.Domain.csproj.CoreCompileInputs.cache
+E:\PAF\Claude\MyApp-Phase2-Screens\MyApp\src\MyApp.Domain\obj\Debug\net8.0\MyApp.Domain.dll
+E:\PAF\Claude\MyApp-Phase2-Screens\MyApp\src\MyApp.Domain\obj\Debug\net8.0\refint\MyApp.Domain.dll
+E:\PAF\Claude\MyApp-Phase2-Screens\MyApp\src\MyApp.Domain\obj\Debug\net8.0\MyApp.Domain.pdb
+E:\PAF\Claude\MyApp-Phase2-Screens\MyApp\src\MyApp.Domain\obj\Debug\net8.0\ref\MyApp.Domain.dll
