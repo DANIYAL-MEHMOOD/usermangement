@@ -1,6 +1,4 @@
 using System.Security.Cryptography;
-using MyApp.Api.Repository.Interfaces;
-using MyApp.Api.Security;
 
 namespace MyApp.Api.Security;
 

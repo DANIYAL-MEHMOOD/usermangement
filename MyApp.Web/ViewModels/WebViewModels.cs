@@ -117,7 +117,26 @@ public class PermissionMatrixViewModel
 public class ProfileViewModel
 {
     public ProfileDto Profile { get; set; } = new();
+    public List<SessionInfoDto> Sessions { get; set; } = [];
     public string? Message { get; set; }
+}
+
+public class AdministrationViewModel
+{
+    public string ActiveTab { get; set; } = "users";
+    public List<UserListItemDto> RecentUsers { get; set; } = [];
+    public List<RoleItemDto> Roles { get; set; } = [];
+    public List<MenuNodeDto> Menus { get; set; } = [];
+    public string Theme { get; set; } = "light";
+    public string Language { get; set; } = "en";
+    public bool SidebarCollapsed { get; set; }
+}
+
+public class AuditLogListViewModel
+{
+    public List<AuditLogItemDto> Items { get; set; } = [];
+    public AuditLogSearchRequestDto Search { get; set; } = new();
+    public PaginationMeta? Pagination { get; set; }
 }
 
 public class SettingsViewModel

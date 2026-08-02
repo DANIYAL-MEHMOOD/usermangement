@@ -1,12 +1,14 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyApp.Web.DTOs;
+using MyApp.Web.Filters;
 using MyApp.Web.Services.Interfaces;
 using MyApp.Web.ViewModels;
 
 namespace MyApp.Web.Controllers;
 
 [Authorize]
+[ServiceFilter(typeof(AdminOnlyFilter))]
 public class UsersController : Controller
 {
     private readonly IUserService _userService;

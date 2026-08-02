@@ -9,12 +9,12 @@ public class LoginRequestDto
 }
 
 public record LoginResponseDto(
-    string AccessToken, string RefreshToken, DateTime AccessTokenExpiry,
+    string Token, DateTime TokenExpiry,
     int UserId, string Username, string FullName, string RoleName, bool MustChangePassword);
 
-public class RefreshTokenRequestDto
+public class LogoutRequestDto
 {
-    public required string RefreshToken { get; set; }
+    public required string Token { get; set; }
 }
 
 public class ForgotPasswordRequestDto
@@ -35,6 +35,11 @@ public class ChangePasswordRequestDto
     public required string NewPassword { get; set; }
     public required string ConfirmNewPassword { get; set; }
 }
+
+/// <summary>One active API session for the current user (Session Management module).</summary>
+public record SessionInfoDto(
+    int SessionTokenId, DateTime CreatedDate, DateTime ExpiryDate,
+    string? IpAddress, string? UserAgent, bool IsCurrent);
 
 // User DTOs
 public record UserListItemDto(

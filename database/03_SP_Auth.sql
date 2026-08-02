@@ -189,46 +189,120 @@ END
 GO
 
 /* ==================================================================
-   Refresh tokens
+   sp_FindUserByEmail — account lookup for password reset (never
+   reveals whether the email exists to callers)
    ================================================================== */
-CREATE OR ALTER PROCEDURE dbo.sp_SaveRefreshToken
+CREATE OR ALTER PROCEDURE dbo.sp_FindUserByEmail
+    @Email NVARCHAR(256)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT TOP 1 UserId
+    FROM dbo.Users
+    WHERE Email = @Email AND IsDeleted = 0;
+END
+GO
+
+/* ==================================================================
+   sp_GetPasswordHash — current credentials for change-password
+   verification (hash/salt are compared in the app layer only)
+   ================================================================== */
+CREATE OR ALTER PROCEDURE dbo.sp_GetPasswordHash
+    @UserId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT PasswordHash, PasswordSalt
+    FROM dbo.Users
+    WHERE UserId = @UserId AND IsDeleted = 0;
+END
+GO
+
+/* ==================================================================
+   Session tokens (opaque, hashed at rest — see SessionTokenService)
+   ================================================================== */
+CREATE OR ALTER PROCEDURE dbo.sp_SaveSessionToken
     @UserId INT,
-    @Token NVARCHAR(500),
+    @TokenHash NVARCHAR(64),
     @ExpiryDate DATETIME2,
-    @CreatedByIp NVARCHAR(50)
+    @IpAddress NVARCHAR(50) = NULL,
+    @UserAgent NVARCHAR(300) = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    INSERT INTO dbo.RefreshTokens (UserId, Token, ExpiryDate, CreatedByIp)
-    VALUES (@UserId, @Token, @ExpiryDate, @CreatedByIp);
+    INSERT INTO dbo.SessionTokens (UserId, TokenHash, ExpiryDate, CreatedByIp, UserAgent)
+    VALUES (@UserId, @TokenHash, @ExpiryDate, @IpAddress, @UserAgent);
 END
 GO
 
-CREATE OR ALTER PROCEDURE dbo.sp_GetRefreshToken
-    @Token NVARCHAR(500)
+CREATE OR ALTER PROCEDURE dbo.sp_GetSessionByTokenHash
+    @TokenHash NVARCHAR(64)
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    SELECT RefreshTokenId, UserId, Token, ExpiryDate, RevokedDate, ReplacedByToken
-    FROM dbo.RefreshTokens
-    WHERE Token = @Token;
+    SELECT st.SessionTokenId, st.UserId, u.Username, u.RoleId, r.RoleName, st.ExpiryDate
+    FROM dbo.SessionTokens st
+    INNER JOIN dbo.Users u ON u.UserId = st.UserId AND u.IsDeleted = 0
+    INNER JOIN dbo.Roles r ON r.RoleId = u.RoleId
+    WHERE st.TokenHash = @TokenHash
+      AND st.IsRevoked = 0
+      AND st.ExpiryDate > SYSUTCDATETIME()
+      AND u.Status = 1;
 END
 GO
 
-CREATE OR ALTER PROCEDURE dbo.sp_RevokeRefreshToken
-    @Token NVARCHAR(500),
-    @RevokedByIp NVARCHAR(50),
-    @ReplacedByToken NVARCHAR(500) = NULL
+CREATE OR ALTER PROCEDURE dbo.sp_RevokeSessionByTokenHash
+    @TokenHash NVARCHAR(64)
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    UPDATE dbo.RefreshTokens
-    SET RevokedDate = SYSUTCDATETIME(),
-        RevokedByIp = @RevokedByIp,
-        ReplacedByToken = @ReplacedByToken
-    WHERE Token = @Token;
+    UPDATE dbo.SessionTokens
+    SET IsRevoked = 1, RevokedDate = SYSUTCDATETIME()
+    WHERE TokenHash = @TokenHash AND IsRevoked = 0;
+END
+GO
+
+CREATE OR ALTER PROCEDURE dbo.sp_RevokeSession
+    @SessionTokenId INT,
+    @UserId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE dbo.SessionTokens
+    SET IsRevoked = 1, RevokedDate = SYSUTCDATETIME()
+    WHERE SessionTokenId = @SessionTokenId AND UserId = @UserId AND IsRevoked = 0;
+END
+GO
+
+CREATE OR ALTER PROCEDURE dbo.sp_GetUserSessions
+    @UserId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT SessionTokenId, UserId, TokenHash, ExpiryDate, CreatedDate, CreatedByIp, UserAgent
+    FROM dbo.SessionTokens
+    WHERE UserId = @UserId AND IsRevoked = 0
+    ORDER BY CreatedDate DESC;
+END
+GO
+
+CREATE OR ALTER PROCEDURE dbo.sp_RevokeAllUserSessions
+    @UserId INT,
+    @ExcludeTokenHash NVARCHAR(64) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE dbo.SessionTokens
+    SET IsRevoked = 1, RevokedDate = SYSUTCDATETIME()
+    WHERE UserId = @UserId AND IsRevoked = 0
+      AND (@ExcludeTokenHash IS NULL OR TokenHash <> @ExcludeTokenHash);
 END
 GO

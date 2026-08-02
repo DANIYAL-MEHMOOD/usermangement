@@ -9,5 +9,5 @@ public interface IPermissionService
     Task<ApiResponse<List<PermissionType>>> GetTypesAsync();
     Task<ApiResponse<List<RolePermissionRow>>> GetMatrixAsync(int roleId);
     Task<ApiResponse<object>> AssignAsync(AssignPermissionsRequest request, int currentUserId);
-    Task<ApiResponse<bool>> HasPermissionAsync(int userId, string module, string action);
+    Task<ApiResponse<bool>> HasPermissionAsync(int userId, int roleId, string module, string action);
 }

@@ -1,0 +1,98 @@
+@model MyApp.Web.ViewModels.AuditLogListViewModel
+@{
+    ViewData["Title"] = "Audit Logs";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">System Audit Logs</h3>
+        <p class="text-muted mb-0">User, module, action, old/new value, IP address, browser and date/time</p>
+    </div>
+    <a href="~/Administration" class="btn btn-outline-secondary btn-sm"><i class="bi bi-speedometer me-1"></i>Administration Hub</a>
+</div>
+
+<div class="glass-card mb-4">
+    <div class="card-header bg-transparent py-3">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text bg-transparent"><i class="bi bi-search"></i></span>
+                    <input type="text" name="SearchTerm" class="form-control" placeholder="Search user, module, action, value..." value="@Model.Search.SearchTerm" />
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="Module" class="form-select">
+                    <option value="">All Modules</option>
+                    @foreach (var module in new[] { "Auth", "Users", "Roles", "Menus", "Permissions", "Profile", "Settings" })
+                    {
+                        <option value="@module" selected="@(Model.Search.Module == module ? "selected" : null)">@module</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="Action" class="form-select">
+                    <option value="">All Actions</option>
+                    @foreach (var action in new[] { "LoginSuccess", "LoginFailed", "Logout", "Create", "Update", "Delete", "SetStatus", "Assign", "Clone", "AssignRole", "PasswordChanged", "PasswordResetCompleted", "SessionRevoked" })
+                    {
+                        <option value="@action" selected="@(Model.Search.Action == action ? "selected" : null)">@action</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2 d-flex">
+                <button type="submit" class="btn btn-primary me-2"><i class="bi bi-funnel me-1"></i>Filter</button>
+                <a href="~/AuditLogs" class="btn btn-outline-secondary"><i class="bi bi-x-circle me-1"></i>Reset</a>
+            </div>
+        </form>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date/Time</th>
+                        <th>User</th>
+                        <th>Module</th>
+                        <th>Action</th>
+                        <th>Old Value</th>
+                        <th>New Value</th>
+                        <th>IP Address</th>
+                        <th>Browser</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Items.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center py-5 text-muted">
+                                <i class="bi bi-journal-x display-6 d-block mb-2"></i>
+                                No audit log entries match your filters.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in Model.Items)
+                        {
+                            <tr>
+                                <td class="small text-nowrap text-muted">@item.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                <td class="fw-semibold">@(string.IsNullOrEmpty(item.Username) ? "System" : item.Username)</td>
+                                <td><span class="badge bg-secondary">@item.Module</span></td>
+                                <td class="small fw-semibold">@item.Action</td>
+                                <td class="small text-muted text-truncate" style="max-width: 180px;" title="@item.OldValue">@(string.IsNullOrEmpty(item.OldValue) ? "—" : item.OldValue)</td>
+                                <td class="small text-muted text-truncate" style="max-width: 180px;" title="@item.NewValue">@(string.IsNullOrEmpty(item.NewValue) ? "—" : item.NewValue)</td>
+                                <td class="small font-monospace text-muted">@(string.IsNullOrEmpty(item.IPAddress) ? "—" : item.IPAddress)</td>
+                                <td class="small text-muted text-truncate" style="max-width: 160px;" title="@item.Browser">@(string.IsNullOrEmpty(item.Browser) ? "—" : item.Browser)</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer bg-transparent py-3">
+        @if (Model.Pagination != null)
+        {
+            @await Html.PartialAsync("_Pagination", Model.Pagination)
+        }
+    </div>
+</div>

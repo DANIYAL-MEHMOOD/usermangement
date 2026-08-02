@@ -1,13 +1,7 @@
 using MyApp.Web.Extensions;
 using MyApp.Web.Middlewares;
-using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
-
-builder.Host.UseSerilog((context, configuration) => configuration
-    .ReadFrom.Configuration(context.Configuration)
-    .Enrich.FromLogContext()
-    .WriteTo.Console());
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpContextAccessor();

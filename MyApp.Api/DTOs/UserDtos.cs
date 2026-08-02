@@ -5,6 +5,10 @@ public record UserListItemDto(
     string? Phone, string? Designation, string? Department, string? ProfilePicturePath,
     int RoleId, string RoleName, byte Status, DateTime? LastLogin, int LoginCount, DateTime CreatedDate);
 
+/// <summary>
+/// Safe user detail payload for the Web layer. Deliberately excludes
+/// PasswordHash / PasswordSalt / FailedLoginAttempts / CreatedBy / ModifiedBy.
+/// </summary>
 public record UserDetailDto(
     int UserId, string? EmployeeNumber, string Username, string FullName, string Email,
     string? Phone, string? Designation, string? Department, string? ProfilePicturePath,
@@ -34,13 +38,6 @@ public class UpdateUserRequest
     public string? Designation { get; set; }
     public string? Department { get; set; }
     public required int RoleId { get; set; }
-}
-
-public class ChangePasswordRequest
-{
-    public required string CurrentPassword { get; set; }
-    public required string NewPassword { get; set; }
-    public required string ConfirmNewPassword { get; set; }
 }
 
 public class UserSearchRequest

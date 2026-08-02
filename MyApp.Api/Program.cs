@@ -1,22 +1,11 @@
-using System.Text;
 using AspNetCoreRateLimit;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication;
 using MyApp.Api.Configurations;
 using MyApp.Api.Extensions;
 using MyApp.Api.Middlewares;
 using MyApp.Api.Security;
-using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// ---------------------------------------------------------------
-// Serilog — structured logging to console + SQL Server sink
-// ---------------------------------------------------------------
-builder.Host.UseSerilog((context, services, configuration) => configuration
-    .ReadFrom.Configuration(context.Configuration)
-    .Enrich.FromLogContext()
-    .WriteTo.Console());
 
 // ---------------------------------------------------------------
 // Services
@@ -25,14 +14,13 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
-    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    options.AddSecurityDefinition("SessionToken", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
-        Name = "Authorization",
-        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
-        Scheme = "Bearer",
-        BearerFormat = "JWT",
+        Name = SessionTokenDefaults.HeaderName,
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+        Scheme = "SessionToken",
         In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-        Description = "Enter a valid JWT access token."
+        Description = "Enter the opaque session token returned by POST /api/auth/login."
     });
     options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
     {
@@ -42,7 +30,7 @@ builder.Services.AddSwaggerGen(options =>
                 Reference = new Microsoft.OpenApi.Models.OpenApiReference
                 {
                     Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-                    Id = "Bearer"
+                    Id = "SessionToken"
                 }
             },
             Array.Empty<string>()
@@ -51,35 +39,15 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 builder.Services.AddHttpContextAccessor();
-builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
+
+builder.Services.Configure<SecuritySettings>(builder.Configuration.GetSection("Security"));
 builder.Services.AddApplicationServices(builder.Configuration);
 
-// JWT authentication
-var jwtSection = builder.Configuration.GetSection(JwtSettings.SectionName);
-var jwtSettings = jwtSection.Get<JwtSettings>()
-    ?? throw new InvalidOperationException("Jwt configuration section is missing.");
-
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.RequireHttpsMetadata = true;
-    options.SaveToken = true;
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = jwtSettings.Issuer,
-        ValidAudience = jwtSettings.Audience,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SigningKey)),
-        ClockSkew = TimeSpan.FromSeconds(30)
-    };
-});
+// Session-token authentication (opaque token in X-Api-Token header, stored
+// hashed in SQL Server). No JWT anywhere in the solution.
+builder.Services.AddAuthentication(SessionTokenDefaults.AuthenticationScheme)
+    .AddScheme<AuthenticationSchemeOptions, SessionTokenAuthenticationHandler>(
+        SessionTokenDefaults.AuthenticationScheme, _ => { });
 
 builder.Services.AddAuthorization();
 
@@ -108,7 +76,6 @@ var app = builder.Build();
 // Middleware pipeline
 // ---------------------------------------------------------------
 app.UseMiddleware<GlobalExceptionMiddleware>();
-app.UseSerilogRequestLogging();
 
 if (app.Environment.IsDevelopment())
 {

@@ -18,7 +18,7 @@ public class CurrentUserService : ICurrentUserService
     public string Username => Session?.GetString(SessionKeys.Username) ?? string.Empty;
     public string FullName => Session?.GetString(SessionKeys.FullName) ?? string.Empty;
     public string RoleName => Session?.GetString(SessionKeys.RoleName) ?? string.Empty;
-    public string AccessToken => Session?.GetString(SessionKeys.AccessToken) ?? string.Empty;
-    public bool IsAuthenticated => !string.IsNullOrEmpty(AccessToken);
+    public string ApiToken => Session?.GetString(SessionKeys.ApiToken) ?? string.Empty;
+    public bool IsAuthenticated => !string.IsNullOrEmpty(ApiToken);
     public bool IsAdministrator => string.Equals(RoleName, "Administrator", StringComparison.OrdinalIgnoreCase);
 }

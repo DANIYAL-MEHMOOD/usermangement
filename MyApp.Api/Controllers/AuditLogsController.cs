@@ -8,7 +8,7 @@ namespace MyApp.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+[Authorize(Roles = "Administrator")]
 public class AuditLogsController : ControllerBase
 {
     private readonly IAuditService _auditService;

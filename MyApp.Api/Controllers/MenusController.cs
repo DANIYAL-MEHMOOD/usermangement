@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyApp.Api.Common;
 using MyApp.Api.DTOs;
+using MyApp.Api.Filters;
 using MyApp.Api.Services.Interfaces;
 
 namespace MyApp.Api.Controllers;
@@ -21,31 +22,35 @@ public class MenusController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Roles = "Administrator")]
     public async Task<ActionResult<ApiResponse<List<MenuNode>>>> GetAll()
     {
         var response = await _menuService.GetHierarchyAsync();
         return Ok(response);
     }
 
+    // Every authenticated user needs their own role-filtered menu tree.
     [HttpGet("mine")]
     public async Task<ActionResult<ApiResponse<List<MenuNode>>>> GetMine()
     {
-        var response = await _menuService.GetUserMenusAsync(_currentUser.UserId);
+        var response = await _menuService.GetUserMenusAsync(_currentUser.UserId!.Value, _currentUser.RoleId ?? 0);
         return Ok(response);
     }
 
     [HttpPost]
+    [AuthorizePermission("Menus", "ADD")]
     public async Task<ActionResult<ApiResponse<int>>> Save([FromBody] SaveMenuRequest request)
     {
-        var response = await _menuService.SaveAsync(request, _currentUser.UserId);
+        var response = await _menuService.SaveAsync(request, _currentUser.UserId!.Value);
         if (!response.Success) return BadRequest(response);
         return Ok(response);
     }
 
     [HttpDelete("{id:int}")]
+    [AuthorizePermission("Menus", "DELETE")]
     public async Task<ActionResult<ApiResponse<object>>> Delete(int id)
     {
-        var response = await _menuService.DeleteAsync(id, _currentUser.UserId);
+        var response = await _menuService.DeleteAsync(id, _currentUser.UserId!.Value);
         if (!response.Success) return BadRequest(response);
         return Ok(response);
     }

@@ -1,6 +1,6 @@
 namespace MyApp.Api.DTOs;
 
-public record RoleDto(int RoleId, string RoleName, string? Description, bool IsSystemRole, bool IsActive, int UserCount);
+public record RoleItem(int RoleId, string RoleName, string? Description, bool IsSystemRole, bool IsActive, int UserCount);
 
 public class SaveRoleRequest
 {

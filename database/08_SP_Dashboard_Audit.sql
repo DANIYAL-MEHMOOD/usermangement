@@ -16,9 +16,9 @@ BEGIN
     SELECT
         (SELECT COUNT(*) FROM dbo.Users WHERE IsDeleted = 0) AS TotalUsers,
         (SELECT COUNT(*) FROM dbo.Users WHERE IsDeleted = 0 AND Status = 1) AS ActiveUsers,
-        (SELECT COUNT(*) FROM dbo.Users WHERE IsDeleted = 0
-            AND LastLogin >= DATEADD(MINUTE, -15, SYSUTCDATETIME())) AS OnlineUsers,
-        (SELECT COUNT(*) FROM dbo.Roles WHERE IsDeleted = 0) AS TotalRoles;
+        (SELECT COUNT(*) FROM dbo.Users WHERE IsDeleted = 0 AND Status = 2) AS LockedUsers,
+        (SELECT COUNT(*) FROM dbo.Roles WHERE IsDeleted = 0) AS TotalRoles,
+        (SELECT COUNT(*) FROM dbo.Menus WHERE IsDeleted = 0) AS TotalMenus;
 
     -- 2) Recent logins
     SELECT TOP (@RecentCount) UserId, Username, FullName, LastLogin
@@ -66,8 +66,10 @@ GO
    sp_GetAuditLogs — filtered + paginated
    ================================================================== */
 CREATE OR ALTER PROCEDURE dbo.sp_GetAuditLogs
-    @UserId INT = NULL,
+    @SearchTerm NVARCHAR(200) = NULL,
     @Module NVARCHAR(100) = NULL,
+    @Action NVARCHAR(100) = NULL,
+    @UserId INT = NULL,
     @DateFrom DATETIME2 = NULL,
     @DateTo DATETIME2 = NULL,
     @PageNumber INT = 1,
@@ -84,16 +86,25 @@ BEGIN
     LEFT JOIN dbo.Users u ON u.UserId = a.UserId
     WHERE (@UserId IS NULL OR a.UserId = @UserId)
       AND (@Module IS NULL OR a.Module = @Module)
+      AND (@Action IS NULL OR a.Action = @Action)
       AND (@DateFrom IS NULL OR a.ActionDate >= @DateFrom)
       AND (@DateTo IS NULL OR a.ActionDate <= @DateTo)
+      AND (@SearchTerm IS NULL OR u.FullName LIKE '%' + @SearchTerm + '%'
+           OR a.Module LIKE '%' + @SearchTerm + '%' OR a.Action LIKE '%' + @SearchTerm + '%'
+           OR a.NewValue LIKE '%' + @SearchTerm + '%')
     ORDER BY a.ActionDate DESC
     OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
 
     SELECT COUNT(*) AS TotalCount
     FROM dbo.AuditLogs a
+    LEFT JOIN dbo.Users u ON u.UserId = a.UserId
     WHERE (@UserId IS NULL OR a.UserId = @UserId)
       AND (@Module IS NULL OR a.Module = @Module)
+      AND (@Action IS NULL OR a.Action = @Action)
       AND (@DateFrom IS NULL OR a.ActionDate >= @DateFrom)
-      AND (@DateTo IS NULL OR a.ActionDate <= @DateTo);
+      AND (@DateTo IS NULL OR a.ActionDate <= @DateTo)
+      AND (@SearchTerm IS NULL OR u.FullName LIKE '%' + @SearchTerm + '%'
+           OR a.Module LIKE '%' + @SearchTerm + '%' OR a.Action LIKE '%' + @SearchTerm + '%'
+           OR a.NewValue LIKE '%' + @SearchTerm + '%');
 END
 GO

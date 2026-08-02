@@ -25,9 +25,8 @@ public class AuthService : IAuthService
             var session = _accessor.HttpContext?.Session;
             if (session != null)
             {
-                session.SetString(SessionKeys.AccessToken, response.Data.AccessToken);
-                session.SetString(SessionKeys.RefreshToken, response.Data.RefreshToken);
-                session.SetString(SessionKeys.AccessTokenExpiry, response.Data.AccessTokenExpiry.ToString("o"));
+                session.SetString(SessionKeys.ApiToken, response.Data.Token);
+                session.SetString(SessionKeys.ApiTokenExpiry, response.Data.TokenExpiry.ToString("o"));
                 session.SetInt32(SessionKeys.UserId, response.Data.UserId);
                 session.SetString(SessionKeys.Username, response.Data.Username);
                 session.SetString(SessionKeys.FullName, response.Data.FullName);
@@ -41,11 +40,11 @@ public class AuthService : IAuthService
     public async Task<ApiResponse<object>?> LogoutAsync()
     {
         var session = _accessor.HttpContext?.Session;
-        var refreshToken = session?.GetString(SessionKeys.RefreshToken);
+        var token = session?.GetString(SessionKeys.ApiToken);
 
-        if (!string.IsNullOrEmpty(refreshToken))
+        if (!string.IsNullOrEmpty(token))
         {
-            await _api.PostAsync<RefreshTokenRequestDto, object>("api/auth/logout", new RefreshTokenRequestDto { RefreshToken = refreshToken });
+            await _api.PostAsync<LogoutRequestDto, object>("api/auth/logout", new LogoutRequestDto { Token = token });
         }
 
         session?.Clear();
@@ -66,4 +65,13 @@ public class AuthService : IAuthService
     {
         return await _api.PostAsync<ChangePasswordRequestDto, object>("api/auth/change-password", request);
     }
+
+    public Task<ApiResponse<List<SessionInfoDto>>?> GetSessionsAsync() =>
+        _api.GetAsync<List<SessionInfoDto>>("api/auth/sessions");
+
+    public Task<ApiResponse<object>?> RevokeSessionAsync(int sessionTokenId) =>
+        _api.DeleteAsync($"api/auth/sessions/{sessionTokenId}");
+
+    public Task<ApiResponse<object>?> RevokeOtherSessionsAsync() =>
+        _api.DeleteAsync("api/auth/sessions/others");
 }
