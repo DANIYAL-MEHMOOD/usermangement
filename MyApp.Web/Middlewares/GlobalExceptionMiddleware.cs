@@ -1,14 +1,14 @@
-using Serilog;
-
 namespace MyApp.Web.Middlewares;
 
 public class GlobalExceptionMiddleware
 {
     private readonly RequestDelegate _next;
+    private readonly ILogger<GlobalExceptionMiddleware> _logger;
 
-    public GlobalExceptionMiddleware(RequestDelegate next)
+    public GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExceptionMiddleware> logger)
     {
         _next = next;
+        _logger = logger;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -22,7 +22,7 @@ public class GlobalExceptionMiddleware
             var requestId = context.TraceIdentifier;
             var refNumber = $"REF-{DateTime.UtcNow:yyyyMMdd}-{Random.Shared.Next(1000, 9999)}";
 
-            Log.Error(ex, "Unhandled Web exception. RequestId={RequestId}, ReferenceNumber={ReferenceNumber}", requestId, refNumber);
+            _logger.LogError(ex, "Unhandled Web exception. RequestId={RequestId}, ReferenceNumber={ReferenceNumber}", requestId, refNumber);
 
             if (context.Request.Headers.XRequestedWith == "XMLHttpRequest" ||
                 context.Request.Headers.Accept.ToString().Contains("application/json"))

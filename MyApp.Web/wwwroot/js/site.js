@@ -1,21 +1,65 @@
-// Theme restore + sidebar collapse + reusable toast/confirm helpers shared by
-// every CRUD screen (Users, Roles, Permissions, Menus).
+// MyApp theme engine (light | dark | glass) + sidebar collapse + reusable
+// toast/confirm/fetch helpers shared by every CRUD screen.
 
-document.addEventListener('DOMContentLoaded', () => {
-    const stored = localStorage.getItem('theme');
-    if (stored) document.documentElement.setAttribute('data-bs-theme', stored === 'auto'
-        ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-        : stored);
+(function () {
+    'use strict';
 
-    const collapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-    if (collapsed) document.querySelector('.app-shell')?.classList.add('collapsed');
+    const VALID_THEMES = ['light', 'dark', 'glass'];
 
-    document.getElementById('sidebarToggle')?.addEventListener('click', () => {
-        const shell = document.querySelector('.app-shell');
-        shell.classList.toggle('collapsed');
-        localStorage.setItem('sidebarCollapsed', shell.classList.contains('collapsed'));
+    function applyTheme(theme) {
+        if (!VALID_THEMES.includes(theme)) return;
+        document.documentElement.setAttribute('data-theme', theme);
+        document.documentElement.setAttribute('data-bs-theme', theme === 'glass' ? 'glass' : theme);
+        // Let Bootstrap components (dropdowns, modals) follow the theme too.
+        document.body.classList.remove('app-theme-light', 'app-theme-dark', 'app-theme-glass');
+        document.body.classList.add('app-theme-' + theme);
+    }
+
+    function currentTheme() {
+        const sessionTheme = document.documentElement.getAttribute('data-theme');
+        const stored = localStorage.getItem('theme');
+        return VALID_THEMES.includes(sessionTheme) ? sessionTheme
+            : VALID_THEMES.includes(stored) ? stored : 'light';
+    }
+
+    function persistTheme(theme) {
+        localStorage.setItem('theme', theme);
+        // Persist to the server (user preferences) so it survives across
+        // devices. The endpoint is CSRF-protected via the meta tag below.
+        const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
+        fetch('/Settings/Theme', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrf || ''
+            },
+            body: JSON.stringify({ theme: theme, language: 'en' })
+        }).catch(() => { /* offline / api down: local preference still applies */ });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        applyTheme(currentTheme());
+
+        const collapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+        if (collapsed) document.querySelector('.app-shell')?.classList.add('collapsed');
+
+        document.getElementById('sidebarToggle')?.addEventListener('click', () => {
+            const shell = document.querySelector('.app-shell');
+            shell.classList.toggle('collapsed');
+            localStorage.setItem('sidebarCollapsed', shell.classList.contains('collapsed'));
+        });
+
+        document.querySelectorAll('.theme-option').forEach(el => {
+            el.addEventListener('click', (e) => {
+                e.preventDefault();
+                const theme = el.getAttribute('data-theme');
+                if (!VALID_THEMES.includes(theme)) return;
+                applyTheme(theme);
+                persistTheme(theme);
+            });
+        });
     });
-});
+})();
 
 /** Shows a Bootstrap toast. kind: 'success' | 'danger' | 'warning' | 'info' */
 function showToast(message, kind = 'success') {
@@ -81,10 +125,7 @@ function confirmDialog(message, title = 'Please confirm') {
     });
 }
 
-/** Small helper so every page's fetch() calls unwrap the ApiResponse envelope
- *  consistently and automatically carry the anti-forgery header Razor Pages
- *  expects on every non-GET handler (see Program.cs AddAntiforgery + the
- *  csrf-token meta tag in _Layout.cshtml). */
+/** Unwraps the ApiResponse envelope and carries the anti-forgery header. */
 async function callApi(url, options = {}) {
     const method = (options.method || 'GET').toUpperCase();
     const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };

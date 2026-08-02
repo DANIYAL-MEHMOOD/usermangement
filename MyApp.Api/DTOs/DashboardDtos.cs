@@ -1,14 +1,15 @@
 namespace MyApp.Api.DTOs;
 
-public record DashboardSummaryDto(int TotalUsers, int ActiveUsers, int OnlineUsers, int TotalRoles);
-public record RecentLoginDto(int UserId, string Username, string FullName, DateTime? LastLogin);
-public record RecentActivityDto(long AuditLogId, int? UserId, string? FullName, string Module, string Action, DateTime ActionDate);
-public record RoleStatDto(int RoleId, string RoleName, int UserCount);
-
-public class DashboardDto
+/// <summary>Executive dashboard payload consumed by the MVC dashboard view.</summary>
+public class DashboardSummary
 {
-    public DashboardSummaryDto Summary { get; set; } = null!;
-    public List<RecentLoginDto> RecentLogins { get; set; } = [];
-    public List<RecentActivityDto> RecentActivity { get; set; } = [];
-    public List<RoleStatDto> RoleStats { get; set; } = [];
+    public int TotalUsers { get; set; }
+    public int ActiveUsers { get; set; }
+    public int LockedUsers { get; set; }
+    public int TotalRoles { get; set; }
+    public int TotalMenus { get; set; }
+    public List<RecentActivityDto> RecentLogins { get; set; } = [];
+    public List<RecentActivityDto> AuditLogs { get; set; } = [];
 }
+
+public record RecentActivityDto(string Module, string Action, string Details, DateTime Timestamp, string? User = null);

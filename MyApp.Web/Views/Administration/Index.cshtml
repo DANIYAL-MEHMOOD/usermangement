@@ -1,0 +1,230 @@
+@model MyApp.Web.ViewModels.AdministrationViewModel
+@{
+    ViewData["Title"] = "Administration Hub";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">Administration Hub</h3>
+        <p class="text-muted mb-0">Central control center for users, roles, menus, permissions and settings</p>
+    </div>
+    <a href="~/Dashboard" class="btn btn-outline-secondary btn-sm"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a>
+</div>
+
+<div class="glass-card overflow-hidden">
+    <ul class="nav nav-tabs admin-tabs px-3 pt-3" id="adminHubTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link @(Model.ActiveTab == "users" ? "active" : "")" data-bs-toggle="tab" data-bs-target="#tab-users" type="button" role="tab">
+                <i class="bi bi-people me-1"></i>Users
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link @(Model.ActiveTab == "roles" ? "active" : "")" data-bs-toggle="tab" data-bs-target="#tab-roles" type="button" role="tab">
+                <i class="bi bi-shield-lock me-1"></i>Roles
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link @(Model.ActiveTab == "menus" ? "active" : "")" data-bs-toggle="tab" data-bs-target="#tab-menus" type="button" role="tab">
+                <i class="bi bi-list-nested me-1"></i>Menus
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link @(Model.ActiveTab == "permissions" ? "active" : "")" data-bs-toggle="tab" data-bs-target="#tab-permissions" type="button" role="tab">
+                <i class="bi bi-grid-3x3 me-1"></i>Permissions
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link @(Model.ActiveTab == "settings" ? "active" : "")" data-bs-toggle="tab" data-bs-target="#tab-settings" type="button" role="tab">
+                <i class="bi bi-gear me-1"></i>Settings
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content p-4">
+        <!-- Users -->
+        <div class="tab-pane fade @(Model.ActiveTab == "users" ? "show active" : "")" id="tab-users" role="tabpanel">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold mb-0"><i class="bi bi-people-fill me-2 text-primary"></i>Recent Users</h6>
+                <a href="~/Users" class="btn btn-sm btn-outline-primary">Manage Users</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr><th>Username</th><th>Full Name</th><th>Role</th><th>Status</th><th>Last Login</th></tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.RecentUsers.Count == 0)
+                        {
+                            <tr><td colspan="5" class="text-center py-4 text-muted">No users found.</td></tr>
+                        }
+                        else
+                        {
+                            @foreach (var u in Model.RecentUsers)
+                            {
+                                <tr>
+                                    <td class="fw-semibold">@u.Username</td>
+                                    <td>@u.FullName</td>
+                                    <td><span class="badge bg-primary-subtle text-primary">@u.RoleName</span></td>
+                                    <td>
+                                        @if (u.Status == 1) { <span class="badge bg-success">Active</span> }
+                                        else if (u.Status == 2) { <span class="badge bg-warning text-dark">Locked</span> }
+                                        else { <span class="badge bg-secondary">Inactive</span> }
+                                    </td>
+                                    <td class="small text-muted">@(u.LastLogin?.ToString("yyyy-MM-dd HH:mm") ?? "Never")</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Roles -->
+        <div class="tab-pane fade @(Model.ActiveTab == "roles" ? "show active" : "")" id="tab-roles" role="tabpanel">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold mb-0"><i class="bi bi-shield-lock-fill me-2 text-primary"></i>Security Roles</h6>
+                <a href="~/Roles" class="btn btn-sm btn-outline-primary">Manage Roles</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr><th>Role</th><th>Description</th><th>Type</th><th>Status</th><th>Users</th></tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Roles.Count == 0)
+                        {
+                            <tr><td colspan="5" class="text-center py-4 text-muted">No roles found.</td></tr>
+                        }
+                        else
+                        {
+                            @foreach (var r in Model.Roles)
+                            {
+                                <tr>
+                                    <td class="fw-semibold">@r.RoleName</td>
+                                    <td class="small text-muted">@r.Description</td>
+                                    <td>
+                                        @if (r.IsSystemRole) { <span class="badge bg-danger-subtle text-danger">System</span> }
+                                        else { <span class="badge bg-secondary-subtle text-secondary">Custom</span> }
+                                    </td>
+                                    <td>
+                                        @if (r.IsActive) { <span class="badge bg-success">Active</span> }
+                                        else { <span class="badge bg-secondary">Inactive</span> }
+                                    </td>
+                                    <td><span class="badge bg-info-subtle text-info">@r.UserCount</span></td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Menus -->
+        <div class="tab-pane fade @(Model.ActiveTab == "menus" ? "show active" : "")" id="tab-menus" role="tabpanel">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold mb-0"><i class="bi bi-list-nested me-2 text-primary"></i>Navigation Menus</h6>
+                <a href="~/Menus" class="btn btn-sm btn-outline-primary">Manage Menus</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr><th>Title</th><th>Icon</th><th>Route</th><th>Order</th><th>Status</th></tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Menus.Count == 0)
+                        {
+                            <tr><td colspan="5" class="text-center py-4 text-muted">No menus configured.</td></tr>
+                        }
+                        else
+                        {
+                            @foreach (var m in Model.Menus.OrderBy(x => x.DisplayOrder))
+                            {
+                                <tr class="table-light fw-bold">
+                                    <td><i class="bi @(string.IsNullOrEmpty(m.Icon) ? "bi-folder" : m.Icon) me-2 text-primary"></i>@m.Title</td>
+                                    <td><code>@m.Icon</code></td>
+                                    <td class="font-monospace small">@(m.ControllerPage ?? m.Route ?? "—")</td>
+                                    <td>@m.DisplayOrder</td>
+                                    <td>
+                                        @if (m.IsActive) { <span class="badge bg-success">Active</span> }
+                                        else { <span class="badge bg-secondary">Inactive</span> }
+                                    </td>
+                                </tr>
+                                @foreach (var child in m.Children.OrderBy(c => c.DisplayOrder))
+                                {
+                                    <tr>
+                                        <td class="ps-5"><i class="bi @(string.IsNullOrEmpty(child.Icon) ? "bi-circle" : child.Icon) me-2 text-muted"></i>@child.Title</td>
+                                        <td><code>@child.Icon</code></td>
+                                        <td class="font-monospace small">@(child.ControllerPage ?? child.Route ?? "—")</td>
+                                        <td>@child.DisplayOrder</td>
+                                        <td>
+                                            @if (child.IsActive) { <span class="badge bg-success">Active</span> }
+                                            else { <span class="badge bg-secondary">Inactive</span> }
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Permissions -->
+        <div class="tab-pane fade @(Model.ActiveTab == "permissions" ? "show active" : "")" id="tab-permissions" role="tabpanel">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold mb-0"><i class="bi bi-grid-3x3 me-2 text-primary"></i>Permission Matrix</h6>
+                <a href="~/Permissions" class="btn btn-sm btn-outline-primary">Open Matrix</a>
+            </div>
+            <p class="text-muted small mb-3">
+                Grant per-role granular access (View, Add, Edit, Delete, Print, Export, Approve, Reject)
+                across every system module.
+            </p>
+            <div class="d-flex gap-2 flex-wrap">
+                @foreach (var r in Model.Roles)
+                {
+                    <a href="~/Permissions?roleId=@r.RoleId" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-key me-1"></i>@r.RoleName
+                    </a>
+                }
+            </div>
+        </div>
+
+        <!-- Settings -->
+        <div class="tab-pane fade @(Model.ActiveTab == "settings" ? "show active" : "")" id="tab-settings" role="tabpanel">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold mb-0"><i class="bi bi-gear-fill me-2 text-primary"></i>User Preferences</h6>
+                <a href="~/Settings" class="btn btn-sm btn-outline-primary">Open Settings</a>
+            </div>
+            <div class="row g-3">
+                <div class="col-sm-6 col-xl-3">
+                    <div class="glass-card p-3 h-100">
+                        <div class="admin-hub-icon mb-2"><i class="bi bi-palette-fill"></i></div>
+                        <div class="small text-muted">Theme</div>
+                        <div class="fw-semibold text-capitalize">@Model.Theme</div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="glass-card p-3 h-100">
+                        <div class="admin-hub-icon mb-2"><i class="bi bi-translate"></i></div>
+                        <div class="small text-muted">Language</div>
+                        <div class="fw-semibold text-capitalize">@Model.Language</div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="glass-card p-3 h-100">
+                        <div class="admin-hub-icon mb-2"><i class="bi bi-layout-sidebar"></i></div>
+                        <div class="small text-muted">Sidebar</div>
+                        <div class="fw-semibold">@(Model.SidebarCollapsed ? "Collapsed by default" : "Expanded by default")</div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="glass-card p-3 h-100">
+                        <div class="admin-hub-icon mb-2"><i class="bi bi-journal-text"></i></div>
+                        <div class="small text-muted">Audit Trail</div>
+                        <a href="~/AuditLogs" class="fw-semibold text-decoration-none">Browse Audit Logs</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -104,20 +104,15 @@
                     });
                 });
 
-                const response = await fetch(`/Permissions/Assign?roleId=${roleId}`, {
+                const result = await callApi(`/Permissions/Assign?roleId=${roleId}`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
-                    },
                     body: JSON.stringify(permissions)
                 });
 
-                const result = await response.json();
-                if (result.success) {
-                    alert('Permissions saved successfully.');
+                if (result.body && result.body.success) {
+                    showToast('Permissions saved successfully.', 'success');
                 } else {
-                    alert('Error: ' + (result.message || 'Failed to save permissions.'));
+                    showToast(result.body?.message || 'Failed to save permissions.', 'danger');
                 }
             } catch (err) {
                 alert('Network error while saving permissions.');

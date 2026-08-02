@@ -10,7 +10,7 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddWebServices(this IServiceCollection services, IConfiguration configuration)
     {
-        var apiBaseUrl = configuration.GetValue<string>("ApiBaseUrl") ?? "https://localhost:5001/";
+        var apiBaseUrl = configuration.GetValue<string>("ApiBaseUrl") ?? "https://localhost:7001/";
 
         services.AddHttpClient<IApiClient, ApiClient.ApiClient>(client =>
         {

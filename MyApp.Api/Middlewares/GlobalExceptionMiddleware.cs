@@ -2,20 +2,25 @@ using System.Net;
 using System.Text.Json;
 using MyApp.Api.Common;
 using MyApp.Api.Exceptions;
-using Serilog;
 
 namespace MyApp.Api.Middlewares;
 
 /// <summary>
 /// Catches unhandled exceptions and returns the standard ApiResponse envelope
-/// with a friendly message — never leaks stack traces to the client.
+/// with a friendly message — never leaks stack traces, SQL errors, connection
+/// strings or server paths to the client.
 /// </summary>
 public class GlobalExceptionMiddleware
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private readonly RequestDelegate _next;
+    private readonly ILogger<GlobalExceptionMiddleware> _logger;
 
-    public GlobalExceptionMiddleware(RequestDelegate next) => _next = next;
+    public GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExceptionMiddleware> logger)
+    {
+        _next = next;
+        _logger = logger;
+    }
 
     public async Task InvokeAsync(HttpContext context)
     {
@@ -25,7 +30,7 @@ public class GlobalExceptionMiddleware
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "Unhandled exception on {Path}", context.Request.Path);
+            _logger.LogError(ex, "Unhandled API exception on {Path}. TraceId={TraceId}", context.Request.Path, context.TraceIdentifier);
 
             context.Response.ContentType = "application/json";
 

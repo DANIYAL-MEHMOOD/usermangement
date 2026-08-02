@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MyApp.Web.Common;
 using MyApp.Web.DTOs;
 using MyApp.Web.Services.Interfaces;
 using MyApp.Web.ViewModels;
@@ -21,12 +22,47 @@ public class ProfileController : Controller
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        var response = await _profileService.GetProfileAsync();
+        var profileResponse = await _profileService.GetProfileAsync();
+        var sessionsResponse = await _authService.GetSessionsAsync();
+
         var model = new ProfileViewModel
         {
-            Profile = response is { Success: true, Data: not null } ? response.Data : new()
+            Profile = profileResponse is { Success: true, Data: not null } ? profileResponse.Data : new(),
+            Sessions = sessionsResponse is { Success: true, Data: not null } ? sessionsResponse.Data : []
         };
         return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RevokeSession(int id)
+    {
+        var response = await _authService.RevokeSessionAsync(id);
+        if (response is { Success: true })
+        {
+            TempData["SuccessMessage"] = "Session revoked successfully.";
+        }
+        else
+        {
+            TempData["ErrorMessage"] = response?.Message ?? "Failed to revoke session.";
+        }
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RevokeOtherSessions()
+    {
+        var response = await _authService.RevokeOtherSessionsAsync();
+        if (response is { Success: true })
+        {
+            TempData["SuccessMessage"] = "All other sessions have been signed out.";
+        }
+        else
+        {
+            TempData["ErrorMessage"] = response?.Message ?? "Failed to sign out other sessions.";
+        }
+        return RedirectToAction(nameof(Index));
     }
 
     [HttpGet]
@@ -119,6 +155,8 @@ public class SettingsController : Controller
             SidebarCollapsed = data.SidebarCollapsed,
             Language = data.Language
         };
+
+        PersistThemeInSession(data.Theme);
         return View(model);
     }
 
@@ -136,6 +174,7 @@ public class SettingsController : Controller
         var response = await _profileService.UpdatePreferencesAsync(dto);
         if (response is { Success: true })
         {
+            PersistThemeInSession(model.Theme);
             TempData["SuccessMessage"] = "Settings updated successfully.";
             return RedirectToAction(nameof(Index));
         }
@@ -145,9 +184,33 @@ public class SettingsController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Theme([FromBody] UpdatePreferencesDto dto)
     {
-        var response = await _profileService.UpdatePreferencesAsync(dto);
+        // Merge with the stored preferences so a theme-only update never
+        // clobbers the user's sidebar/language choices.
+        var existing = await _profileService.GetPreferencesAsync();
+        var merged = new UpdatePreferencesDto
+        {
+            Theme = dto.Theme,
+            SidebarCollapsed = existing is { Success: true, Data: not null } ? existing.Data.SidebarCollapsed : dto.SidebarCollapsed,
+            Language = existing is { Success: true, Data: not null } ? existing.Data.Language : "en",
+            DashboardLayout = existing is { Success: true, Data: not null } ? existing.Data.DashboardLayout : dto.DashboardLayout,
+            LandingPage = existing is { Success: true, Data: not null } ? existing.Data.LandingPage : dto.LandingPage
+        };
+
+        var response = await _profileService.UpdatePreferencesAsync(merged);
+        if (response is { Success: true })
+        {
+            PersistThemeInSession(merged.Theme);
+        }
         return Json(new { success = response?.Success ?? false });
+    }
+
+    private void PersistThemeInSession(string theme)
+    {
+        var session = HttpContext.Session;
+        session.SetString(SessionKeys.Theme, theme);
+        session.SetString(SessionKeys.Language, HttpContext.Session.GetString(SessionKeys.Language) ?? "en");
     }
 }

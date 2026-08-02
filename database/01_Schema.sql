@@ -88,24 +88,25 @@ CREATE INDEX IX_PasswordHistory_UserId ON dbo.PasswordHistory(UserId, CreatedDat
 GO
 
 /* ------------------------------------------------------------------
-   Refresh Tokens
+   Session Tokens (opaque API session tokens — only SHA-256 hashes are
+   stored, never the plaintext token; JWT is not used anywhere)
    ------------------------------------------------------------------ */
-CREATE TABLE dbo.RefreshTokens
+CREATE TABLE dbo.SessionTokens
 (
-    RefreshTokenId  INT IDENTITY(1,1)  NOT NULL CONSTRAINT PK_RefreshTokens PRIMARY KEY,
+    SessionTokenId  INT IDENTITY(1,1)  NOT NULL CONSTRAINT PK_SessionTokens PRIMARY KEY,
     UserId          INT                 NOT NULL,
-    Token           NVARCHAR(500)       NOT NULL,
+    TokenHash       NVARCHAR(64)        NOT NULL,
     ExpiryDate      DATETIME2           NOT NULL,
-    CreatedDate     DATETIME2           NOT NULL CONSTRAINT DF_RefreshTokens_CreatedDate DEFAULT (SYSUTCDATETIME()),
+    CreatedDate     DATETIME2           NOT NULL CONSTRAINT DF_SessionTokens_CreatedDate DEFAULT (SYSUTCDATETIME()),
     CreatedByIp     NVARCHAR(50)        NULL,
+    UserAgent       NVARCHAR(300)       NULL,
+    IsRevoked       BIT                 NOT NULL CONSTRAINT DF_SessionTokens_IsRevoked DEFAULT (0),
     RevokedDate     DATETIME2           NULL,
-    RevokedByIp     NVARCHAR(50)        NULL,
-    ReplacedByToken NVARCHAR(500)       NULL,
-    CONSTRAINT FK_RefreshTokens_Users FOREIGN KEY (UserId) REFERENCES dbo.Users(UserId),
-    CONSTRAINT UQ_RefreshTokens_Token UNIQUE (Token)
+    CONSTRAINT FK_SessionTokens_Users FOREIGN KEY (UserId) REFERENCES dbo.Users(UserId),
+    CONSTRAINT UQ_SessionTokens_TokenHash UNIQUE (TokenHash)
 );
 GO
-CREATE INDEX IX_RefreshTokens_UserId ON dbo.RefreshTokens(UserId);
+CREATE INDEX IX_SessionTokens_UserId ON dbo.SessionTokens(UserId);
 GO
 
 /* ------------------------------------------------------------------

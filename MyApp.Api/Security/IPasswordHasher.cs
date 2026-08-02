@@ -1,4 +1,4 @@
-namespace MyApp.Api.Repository.Interfaces;
+namespace MyApp.Api.Security;
 
 public interface IPasswordHasher
 {

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MyApp.Web.Common;
 using MyApp.Web.DTOs;
 using MyApp.Web.Services.Interfaces;
 using MyApp.Web.ViewModels;
@@ -14,11 +15,13 @@ public class AuthController : Controller
 {
     private readonly IAuthService _authService;
     private readonly ICurrentUserService _currentUser;
+    private readonly IProfileService _profileService;
 
-    public AuthController(IAuthService authService, ICurrentUserService currentUser)
+    public AuthController(IAuthService authService, ICurrentUserService currentUser, IProfileService profileService)
     {
         _authService = authService;
         _currentUser = currentUser;
+        _profileService = profileService;
     }
 
     [HttpGet]
@@ -71,10 +74,20 @@ public class AuthController : Controller
         var authProperties = new AuthenticationProperties
         {
             IsPersistent = model.RememberMe,
-            ExpiresUtc = response.Data.AccessTokenExpiry
+            ExpiresUtc = response.Data.TokenExpiry
         };
 
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, authProperties);
+
+        // Restore the user's theme/language/sidebar preferences so the UI
+        // renders exactly as they left it.
+        var prefs = await _profileService.GetPreferencesAsync();
+        if (prefs is { Success: true, Data: not null })
+        {
+            HttpContext.Session.SetString(SessionKeys.Theme, prefs.Data.Theme);
+            HttpContext.Session.SetString(SessionKeys.Language, prefs.Data.Language);
+            HttpContext.Session.SetBoolean(SessionKeys.SidebarCollapsed, prefs.Data.SidebarCollapsed);
+        }
 
         if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
         {
